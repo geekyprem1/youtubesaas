@@ -127,8 +127,8 @@ export default function AnalysisPage() {
             Analysis for <span className="text-white font-semibold">{channel?.name}</span>
           </span>
           <span className="ml-auto text-xs text-green-400 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
-            Complete
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block animate-pulse" />
+            Your Next Opportunity Is Ready
           </span>
         </motion.div>
 

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowRight, Youtube } from "lucide-react";
+import { Loader2, ArrowRight, Youtube, Users } from "lucide-react";
 
 interface Props {
   plan: "free" | "pro";
@@ -96,20 +96,29 @@ export function ChannelInputCard({ plan, dailyUsed, dailyLimit }: Props) {
           className="h-12 px-6 bg-gradient-purple hover:opacity-90 text-white font-semibold gap-2 glow-purple whitespace-nowrap"
         >
           {loading ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing...</>
+            <><Loader2 className="w-4 h-4 animate-spin" /> Finding Your Next Hit...</>
           ) : (
-            <>Analyze <ArrowRight className="w-4 h-4" /></>
+            <>Find My Next Opportunity <ArrowRight className="w-4 h-4" /></>
           )}
         </Button>
       </div>
 
-      {plan === "free" && (
-        <p className="text-xs text-muted-foreground mt-3">
-          {limitReached
-            ? "Daily limit reached — upgrade to Pro for unlimited analyses"
-            : `${remaining} of ${dailyLimit} free analyses remaining today`}
-        </p>
-      )}
+      {/* Social proof */}
+      <div className="flex items-center justify-between mt-3">
+        <div className="flex items-center gap-1.5">
+          <Users className="w-3 h-3 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">
+            Creators discovered <span className="text-white/70 font-semibold">24,000+</span> opportunities this week
+          </span>
+        </div>
+        {plan === "free" && (
+          <p className="text-xs text-muted-foreground">
+            {limitReached
+              ? "Daily limit reached — upgrade to Pro"
+              : `${remaining} of ${dailyLimit} free analyses left today`}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

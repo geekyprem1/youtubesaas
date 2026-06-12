@@ -9,6 +9,7 @@ import { RadarWidget } from "@/components/dashboard/radar-widget";
 import { WatchlistWidget } from "@/components/dashboard/watchlist-widget";
 import { VideoAnalyzerPromo } from "@/components/dashboard/video-analyzer-promo";
 import { QuickStats } from "@/components/dashboard/quick-stats";
+import { TodaysOpportunity } from "@/components/dashboard/todays-opportunity";
 
 interface UserData {
   user: {
@@ -80,12 +81,15 @@ export default function DashboardPage() {
         <WatchlistWidget />
       </div>
 
-      {/* ── Row 3: Opportunity Radar + Video Analyzer promo ── */}
+      {/* ── Row 3: Opportunity Radar + Today's Opportunity + Video Analyzer promo ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2">
           <RadarWidget />
         </div>
-        <VideoAnalyzerPromo />
+        <div className="flex flex-col gap-5">
+          <TodaysOpportunity />
+          <VideoAnalyzerPromo />
+        </div>
       </div>
 
     </div>

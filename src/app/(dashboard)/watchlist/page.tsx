@@ -123,12 +123,38 @@ export default function WatchlistPage() {
 
       {/* Watchlist */}
       {channels.length === 0 ? (
-        <div className="glass rounded-2xl p-12 text-center">
-          <Eye className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-          <h3 className="text-lg font-bold text-white mb-1">No competitors tracked yet</h3>
-          <p className="text-sm text-muted-foreground">
-            Add competitor channel URLs above to start tracking their uploads.
-          </p>
+        <div className="glass rounded-2xl p-6">
+          <div className="text-center mb-6">
+            <Eye className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+            <h3 className="text-base font-bold text-white mb-1">Start tracking your competition</h3>
+            <p className="text-sm text-muted-foreground">Add a channel above, or quick-add one of these popular AI creators:</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              { name: "Greg Isenberg", handle: "@gregisenberg", subs: "234K", niche: "AI Startups & SaaS", url: "https://youtube.com/@gregisenberg" },
+              { name: "Dan Koe", handle: "@dankoe", subs: "1.1M", niche: "Creator Economy & AI", url: "https://youtube.com/@dankoe" },
+              { name: "Ali Abdaal", handle: "@aliabdaal", subs: "5.6M", niche: "Productivity & Tech", url: "https://youtube.com/@aliabdaal" },
+              { name: "AI Foundations", handle: "@aifoundations", subs: "89K", niche: "AI Tools & Tutorials", url: "https://youtube.com/@aifoundations" },
+            ].map(s => (
+              <motion.button
+                key={s.handle}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={() => setAddUrl(s.url)}
+                className="flex items-center gap-3 p-4 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:border-primary/30 hover:bg-primary/5 transition-all text-left group"
+              >
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-blue-500/20 flex items-center justify-center shrink-0 text-sm font-black text-white border border-white/[0.08]">
+                  {s.name[0]}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white group-hover:text-accent transition-colors truncate">{s.name}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{s.subs} subs · {s.niche}</p>
+                </div>
+                <Plus className="w-4 h-4 text-muted-foreground group-hover:text-accent transition-colors shrink-0" />
+              </motion.button>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground text-center mt-4">Click any channel to pre-fill the URL, then hit Add</p>
         </div>
       ) : (
         <div className="space-y-3">

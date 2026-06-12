@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { resolveChannelId, fetchChannelData, fetchChannelVideos, extractChannelIdentifier } from "@/lib/youtube";
+import { resolveChannelId, fetchChannelData, fetchChannelVideos } from "@/lib/youtube";
 import { calculatePerformanceScore } from "@/lib/utils";
+
+function parseChannelUrl(url: string): { type: "handle" | "channelId" | "username"; value: string } | null {
+  try {
+    const u = new URL(url.trim());
+    const parts = u.pathname.split("/").filter(Boolean);
+    if (parts[0]?.startsWith("@")) return { type: "handle", value: parts[0].slice(1) };
+    if (parts[0] === "channel" && parts[1]) return { type: "channelId", value: parts[1] };
+    if (parts[0] === "user" && parts[1]) return { type: "username", value: parts[1] };
+    if (parts[0] && !["watch", "shorts", "playlist"].includes(parts[0])) return { type: "username", value: parts[0] };
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,8 +26,8 @@ export async function POST(req: NextRequest) {
     const { channelUrl } = await req.json();
     if (!channelUrl) return NextResponse.json({ error: "Channel URL required" }, { status: 400 });
 
-    const identifier = extractChannelIdentifier(channelUrl);
-    if (identifier.type === "invalid") return NextResponse.json({ error: "Invalid YouTube channel URL" }, { status: 400 });
+    const identifier = parseChannelUrl(channelUrl);
+    if (!identifier) return NextResponse.json({ error: "Invalid YouTube channel URL" }, { status: 400 });
 
     const channelId = await resolveChannelId(identifier.type, identifier.value);
     const channel = await fetchChannelData(channelId);
