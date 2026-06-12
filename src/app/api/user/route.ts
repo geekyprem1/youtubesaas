@@ -65,10 +65,16 @@ function extractNameFromUrl(url: string | null): string {
   if (!url) return "Unknown Channel";
   try {
     const u = new URL(url);
+    // Skip video URLs — these are not channel URLs
+    if (u.searchParams.has("v") || u.pathname.startsWith("/watch")) return "Unknown Channel";
     const parts = u.pathname.split("/").filter(Boolean);
-    const handle = parts.find((p) => p.startsWith("@")) ?? parts[parts.length - 1];
+    // Skip common non-channel path segments
+    const skip = new Set(["watch", "shorts", "playlist", "results", "feed"]);
+    const handle = parts.find((p) => p.startsWith("@") && !skip.has(p))
+      ?? parts.find((p) => p.startsWith("c/") || p.startsWith("channel/"))
+      ?? parts.find((p) => !skip.has(p) && p.length > 2);
     return handle ? decodeURIComponent(handle) : "Unknown Channel";
   } catch {
-    return url;
+    return url.length < 60 ? url : "Unknown Channel";
   }
 }

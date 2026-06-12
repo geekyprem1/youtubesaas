@@ -149,8 +149,14 @@ export function AnalysisHistory({ analyses, loading }: Props) {
               )}
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">
-                  {a.channels?.name ?? "Unknown Channel"}
+                <p className={`text-sm font-semibold truncate ${
+                  !a.channels?.name || a.channels.name === "Unknown Channel"
+                    ? "text-muted-foreground italic"
+                    : "text-white"
+                }`}>
+                  {a.channels?.name && a.channels.name !== "Unknown Channel"
+                    ? a.channels.name
+                    : "Channel pending…"}
                 </p>
                 <p className="text-xs text-muted-foreground">{formatDate(a.created_at)}</p>
               </div>

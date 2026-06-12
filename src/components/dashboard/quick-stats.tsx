@@ -11,10 +11,12 @@ interface Props {
 
 export function QuickStats({ analysesCount, loading }: Props) {
   const watchlistCount = (() => {
+    if (typeof window === "undefined") return 0;
     try { return JSON.parse(localStorage.getItem("uploadiq_watchlist") ?? "[]").length; } catch { return 0; }
   })();
 
   const calendarCount = (() => {
+    if (typeof window === "undefined") return 0;
     try { return JSON.parse(localStorage.getItem("uploadiq_calendar") ?? "[]").length; } catch { return 0; }
   })();
 

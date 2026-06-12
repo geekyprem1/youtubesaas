@@ -45,42 +45,48 @@ export default function DashboardPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-5 pb-10">
 
-      {/* Hero */}
+      {/* ── Hero ── */}
       <WelcomeBanner
         user={userData?.user}
         loading={loading}
         analysesCount={analysesCount}
       />
 
-      {/* Quick stats */}
+      {/* ── Quick stats ── */}
       <QuickStats analysesCount={analysesCount} loading={loading} />
 
-      {/* Main: Channel input + Sidebar */}
+      {/* ── Row 1: Channel input + Usage sidebar ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 space-y-5">
+        <div className="lg:col-span-2">
           <ChannelInputCard
             plan={userData?.user.plan ?? "free"}
             dailyUsed={userData?.user.dailyAnalysesUsed ?? 0}
             dailyLimit={userData?.user.dailyAnalysesLimit ?? 3}
           />
-          <AnalysisHistory analyses={userData?.analyses ?? []} loading={loading} />
         </div>
-
-        {/* Right column */}
-        <div className="space-y-5">
-          <UsageCard
-            plan={userData?.user.plan ?? "free"}
-            used={userData?.user.dailyAnalysesUsed ?? 0}
-            limit={userData?.user.dailyAnalysesLimit ?? 3}
-            loading={loading}
-          />
-          <VideoAnalyzerPromo />
-          <WatchlistWidget />
-        </div>
+        <UsageCard
+          plan={userData?.user.plan ?? "free"}
+          used={userData?.user.dailyAnalysesUsed ?? 0}
+          limit={userData?.user.dailyAnalysesLimit ?? 3}
+          loading={loading}
+        />
       </div>
 
-      {/* Bottom: Opportunity Radar */}
-      <RadarWidget />
+      {/* ── Row 2: Recent analyses + Watchlist ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2">
+          <AnalysisHistory analyses={userData?.analyses ?? []} loading={loading} />
+        </div>
+        <WatchlistWidget />
+      </div>
+
+      {/* ── Row 3: Opportunity Radar + Video Analyzer promo ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2">
+          <RadarWidget />
+        </div>
+        <VideoAnalyzerPromo />
+      </div>
 
     </div>
   );

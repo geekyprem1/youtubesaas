@@ -27,6 +27,15 @@ export function ChannelInputCard({ plan, dailyUsed, dailyLimit }: Props) {
       toast({ title: "Enter a channel URL", variant: "destructive" });
       return;
     }
+    // Reject video URLs
+    if (url.includes("watch?v=") || url.includes("youtu.be/") || url.includes("/shorts/")) {
+      toast({
+        title: "That's a video URL",
+        description: "Please paste a channel URL like youtube.com/@channelname",
+        variant: "destructive",
+      });
+      return;
+    }
     if (limitReached) {
       toast({
         title: "Daily limit reached",
@@ -67,7 +76,7 @@ export function ChannelInputCard({ plan, dailyUsed, dailyLimit }: Props) {
         <div>
           <h2 className="text-lg font-bold text-white">Analyze a Channel</h2>
           <p className="text-sm text-muted-foreground">
-            Paste any YouTube channel URL to start
+            Paste a channel URL — get 20 video ideas, competitor gaps, and confidence scores
           </p>
         </div>
       </div>
@@ -76,7 +85,7 @@ export function ChannelInputCard({ plan, dailyUsed, dailyLimit }: Props) {
         <Input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://youtube.com/@creator"
+          placeholder="https://youtube.com/@yourchannelname"
           className="h-12 bg-muted/40 border-border/60 text-white placeholder:text-muted-foreground flex-1"
           onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
           disabled={loading || limitReached}
