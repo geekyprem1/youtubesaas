@@ -56,40 +56,33 @@ export default function DashboardPage() {
       {/* ── Quick stats ── */}
       <QuickStats analysesCount={analysesCount} loading={loading} />
 
-      {/* ── Row 1: Channel input + Usage sidebar ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2">
+      {/* ── Main grid ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+
+        {/* Left column (2/3) */}
+        <div className="lg:col-span-2 flex flex-col gap-5">
           <ChannelInputCard
             plan={userData?.user.plan ?? "free"}
             dailyUsed={userData?.user.dailyAnalysesUsed ?? 0}
             dailyLimit={userData?.user.dailyAnalysesLimit ?? 3}
           />
-        </div>
-        <UsageCard
-          plan={userData?.user.plan ?? "free"}
-          used={userData?.user.dailyAnalysesUsed ?? 0}
-          limit={userData?.user.dailyAnalysesLimit ?? 3}
-          loading={loading}
-        />
-      </div>
-
-      {/* ── Row 2: Recent analyses + Watchlist ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2">
           <AnalysisHistory analyses={userData?.analyses ?? []} loading={loading} />
-        </div>
-        <WatchlistWidget />
-      </div>
-
-      {/* ── Row 3: Opportunity Radar + Today's Opportunity + Video Analyzer promo ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2">
           <RadarWidget />
         </div>
+
+        {/* Right column (1/3) */}
         <div className="flex flex-col gap-5">
+          <UsageCard
+            plan={userData?.user.plan ?? "free"}
+            used={userData?.user.dailyAnalysesUsed ?? 0}
+            limit={userData?.user.dailyAnalysesLimit ?? 3}
+            loading={loading}
+          />
           <TodaysOpportunity />
+          <WatchlistWidget />
           <VideoAnalyzerPromo />
         </div>
+
       </div>
 
     </div>
