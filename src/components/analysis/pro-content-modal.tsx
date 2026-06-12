@@ -24,9 +24,10 @@ interface Props {
   channel: Record<string, string | number>;
   plan: "free" | "pro";
   onClose: () => void;
+  defaultTab?: string;
 }
 
-export function ProContentModal({ idea, channelDNA, channel, plan, onClose }: Props) {
+export function ProContentModal({ idea, channelDNA, channel, plan, onClose, defaultTab = "titles" }: Props) {
   const [content, setContent] = useState<ProContent | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +85,7 @@ export function ProContentModal({ idea, channelDNA, channel, plan, onClose }: Pr
           ) : error ? (
             <div className="text-center py-8 text-destructive">{error}</div>
           ) : content ? (
-            <Tabs defaultValue="titles">
+            <Tabs defaultValue={defaultTab}>
               <TabsList className="grid grid-cols-4 mb-6">
                 <TabsTrigger value="titles">Titles</TabsTrigger>
                 <TabsTrigger value="thumbnails">Thumbnails</TabsTrigger>
