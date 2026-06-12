@@ -10,13 +10,19 @@ import {
   CrownIcon,
   LogOut,
   Plus,
+  Film,
+  Calendar,
+  Eye,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/history", label: "History", icon: History },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, badge: null },
+  { href: "/video-analyzer", label: "Video Analyzer", icon: Film, badge: "New" },
+  { href: "/calendar", label: "Content Calendar", icon: Calendar, badge: null },
+  { href: "/watchlist", label: "Watchlist", icon: Eye, badge: null },
+  { href: "/dashboard/history", label: "History", icon: History, badge: null },
 ];
 
 export function DashboardSidebar() {
@@ -55,7 +61,7 @@ export function DashboardSidebar() {
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = pathname === item.href;
+          const active = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
               key={item.href}
@@ -67,8 +73,13 @@ export function DashboardSidebar() {
                   : "text-muted-foreground hover:bg-secondary/60 hover:text-white"
               )}
             >
-              <Icon className="w-4 h-4" />
-              {item.label}
+              <Icon className="w-4 h-4 shrink-0" />
+              <span className="flex-1">{item.label}</span>
+              {item.badge && (
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/20">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           );
         })}

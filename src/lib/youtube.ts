@@ -223,6 +223,41 @@ export async function fetchMultipleChannels(
   }));
 }
 
+export function extractVideoId(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("youtu.be")) return u.pathname.slice(1).split("?")[0];
+    return u.searchParams.get("v");
+  } catch {
+    const m = url.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+    return m ? m[1] : null;
+  }
+}
+
+export async function fetchVideoById(videoId: string) {
+  const res = await fetch(
+    `${YT_BASE}/videos?part=snippet,statistics,contentDetails&id=${videoId}&key=${apiKey()}`
+  );
+  const data = await res.json();
+  if (!data.items?.length) throw new Error("Video not found");
+  const v = data.items[0];
+  return {
+    id: v.id,
+    title: v.snippet.title,
+    description: v.snippet.description ?? "",
+    channelId: v.snippet.channelId,
+    channelTitle: v.snippet.channelTitle,
+    publishedAt: v.snippet.publishedAt,
+    thumbnailUrl: v.snippet.thumbnails?.maxres?.url ?? v.snippet.thumbnails?.high?.url ?? "",
+    tags: (v.snippet.tags ?? []) as string[],
+    viewCount: parseInt(v.statistics.viewCount ?? "0"),
+    likeCount: parseInt(v.statistics.likeCount ?? "0"),
+    commentCount: parseInt(v.statistics.commentCount ?? "0"),
+    duration: v.contentDetails.duration as string,
+    categoryId: v.snippet.categoryId as string,
+  };
+}
+
 export async function fetchCompetitorTopVideos(
   channelId: string,
   maxResults = 10

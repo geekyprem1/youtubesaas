@@ -200,6 +200,116 @@ Return this exact JSON:
   return generateJSON<ProContent>(prompt);
 }
 
+export interface VideoAnalysis {
+  viralityScore: number;
+  hookStrength: number;
+  titleStrength: number;
+  thumbnailStrength: number;
+  audienceMatch: number;
+  retentionPotential: number;
+  whyItWorked: string;
+  hookBreakdown: string;
+  titleBreakdown: string;
+  emotionalTriggers: string[];
+  videoFramework: {
+    hook: string;
+    problem: string;
+    story: string;
+    proof: string;
+    cta: string;
+  };
+  timeline: Array<{ timestamp: string; section: string; description: string }>;
+  strengths: string[];
+  weaknesses: string[];
+  similarOpportunities: Array<{
+    title: string;
+    angle: string;
+    hook: string;
+    whyItWillWork: string;
+  }>;
+}
+
+export async function analyzeVideo(video: {
+  id: string;
+  title: string;
+  description: string;
+  channelTitle: string;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  tags: string[];
+  duration: string;
+  publishedAt: string;
+}): Promise<VideoAnalysis> {
+  const engagementRate = video.viewCount > 0
+    ? (((video.likeCount + video.commentCount * 2) / video.viewCount) * 100).toFixed(2)
+    : "0";
+
+  const prompt = `
+You are a YouTube viral video analyst. Deeply analyze this video and return a comprehensive breakdown.
+
+VIDEO DATA:
+Title: "${video.title}"
+Channel: ${video.channelTitle}
+Views: ${video.viewCount.toLocaleString()}
+Likes: ${video.likeCount.toLocaleString()}
+Comments: ${video.commentCount.toLocaleString()}
+Engagement Rate: ${engagementRate}%
+Duration: ${video.duration}
+Published: ${video.publishedAt}
+Tags: ${video.tags.slice(0, 15).join(", ")}
+Description Preview: ${video.description.slice(0, 400)}
+
+Analyze the TITLE deeply for: curiosity gap, power words, specificity, emotional triggers, search intent.
+Analyze the HOOK based on title + description: what problem does it promise to solve?
+Explain WHY this video performed well (or poorly) based on the metrics.
+
+Return this exact JSON:
+{
+  "viralityScore": 0-100,
+  "hookStrength": 0-100,
+  "titleStrength": 0-100,
+  "thumbnailStrength": 0-100,
+  "audienceMatch": 0-100,
+  "retentionPotential": 0-100,
+  "whyItWorked": "2-3 sentences explaining the core reason for performance",
+  "hookBreakdown": "Specific analysis of hook technique used",
+  "titleBreakdown": "Specific analysis of title formula and power words used",
+  "emotionalTriggers": ["fear", "curiosity", "aspiration", "etc — list the specific triggers"],
+  "videoFramework": {
+    "hook": "What the first 30 seconds likely set up",
+    "problem": "The core problem/pain addressed",
+    "story": "The story or journey structure",
+    "proof": "How credibility/proof was established",
+    "cta": "Likely call to action"
+  },
+  "timeline": [
+    { "timestamp": "0:00", "section": "Hook", "description": "What likely happens" },
+    { "timestamp": "0:30", "section": "Problem Setup", "description": "What likely happens" },
+    { "timestamp": "2:00", "section": "Main Content", "description": "What likely happens" },
+    { "timestamp": "8:00", "section": "Proof/Results", "description": "What likely happens" },
+    { "timestamp": "10:00", "section": "CTA", "description": "What likely happens" }
+  ],
+  "strengths": ["specific strength 1", "specific strength 2", "specific strength 3"],
+  "weaknesses": ["area for improvement 1", "area for improvement 2"],
+  "similarOpportunities": [
+    {
+      "title": "new unique video title (not a copy)",
+      "angle": "different angle/perspective",
+      "hook": "suggested opening hook",
+      "whyItWillWork": "why this opportunity exists"
+    },
+    { "title": "...", "angle": "...", "hook": "...", "whyItWillWork": "..." },
+    { "title": "...", "angle": "...", "hook": "...", "whyItWillWork": "..." },
+    { "title": "...", "angle": "...", "hook": "...", "whyItWillWork": "..." },
+    { "title": "...", "angle": "...", "hook": "...", "whyItWillWork": "..." }
+  ]
+}
+`;
+
+  return generateJSON<VideoAnalysis>(prompt);
+}
+
 export async function findCompetitorKeywords(
   channelDNA: ChannelDNA
 ): Promise<string[]> {
