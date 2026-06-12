@@ -9,6 +9,7 @@ import {
   History,
   CrownIcon,
   LogOut,
+  Plus,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -37,6 +38,17 @@ export function DashboardSidebar() {
             <Youtube className="w-4 h-4 text-white" />
           </div>
           <span className="font-bold text-white text-sm">UploadIQ</span>
+        </Link>
+      </div>
+
+      {/* Quick Analyze CTA */}
+      <div className="px-4 py-3 border-b border-border/40">
+        <Link
+          href="/dashboard"
+          className="flex items-center justify-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-bold bg-gradient-purple text-white hover:opacity-90 transition-opacity glow-purple"
+        >
+          <Plus className="w-4 h-4" />
+          New Analysis
         </Link>
       </div>
 

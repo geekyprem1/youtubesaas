@@ -9,6 +9,11 @@ import { OpportunitiesGrid } from "@/components/analysis/opportunities-grid";
 import { CompetitorOpportunities } from "@/components/analysis/competitor-opportunities";
 import { WinningContent } from "@/components/analysis/winning-content";
 import { ContentDNACollapsed } from "@/components/analysis/content-dna-collapsed";
+import { ConfidenceBreakdown } from "@/components/analysis/confidence-breakdown";
+import { StrategyPicker } from "@/components/analysis/strategy-picker";
+import { ShareCard } from "@/components/analysis/share-card";
+import { OpportunityRadar } from "@/components/analysis/opportunity-radar";
+import { ExecutionScore } from "@/components/analysis/execution-score";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -133,6 +138,7 @@ export default function AnalysisPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
+            className="space-y-3"
           >
             <HeroVideoIdea
               idea={topIdea}
@@ -141,6 +147,42 @@ export default function AnalysisPage() {
               plan={plan}
               competitors={competitors}
             />
+            {/* Confidence breakdown + share row */}
+            <div className="flex flex-col md:flex-row gap-3">
+              <div className="flex-1">
+                <ConfidenceBreakdown
+                  score={Math.min(99, Math.round(topIdea.opportunityScore * 1.05 - 2))}
+                  competitorCount={competitors.length}
+                  channelMatch={topIdea.opportunityScore}
+                />
+              </div>
+              <div className="flex items-start pt-1">
+                <ShareCard
+                  title={topIdea.title}
+                  score={topIdea.opportunityScore}
+                  confidence={Math.min(99, Math.round(topIdea.opportunityScore * 1.05 - 2))}
+                  estimatedViews={topIdea.estimatedPerformance}
+                  channelName={(channel?.name as string) ?? "Your Channel"}
+                />
+              </div>
+            </div>
+            {/* Execution score */}
+            <ExecutionScore
+              difficulty={topIdea.difficulty}
+              format={topIdea.format}
+              topics={topIdea.topics ?? []}
+            />
+          </motion.div>
+        )}
+
+        {/* STRATEGY PICKER */}
+        {ideas.length >= 3 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            <StrategyPicker ideas={ideas} />
           </motion.div>
         )}
 
@@ -182,7 +224,18 @@ export default function AnalysisPage() {
           </motion.div>
         )}
 
-        {/* SECTION 5: Content DNA (collapsed, bottom) */}
+        {/* SECTION 5: Opportunity Radar */}
+        {channelDNA && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+          >
+            <OpportunityRadar channelDNA={channelDNA} />
+          </motion.div>
+        )}
+
+        {/* SECTION 6: Content DNA (collapsed, bottom) */}
         {channelDNA && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
