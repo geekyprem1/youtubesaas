@@ -18,7 +18,7 @@ export function Navbar() {
           <div className="w-8 h-8 rounded-lg bg-gradient-purple flex items-center justify-center glow-purple">
             <Youtube className="w-4 h-4 text-white" />
           </div>
-          <span className="font-bold text-white">NextVideo AI</span>
+          <span className="font-bold text-white">UploadIQ</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">

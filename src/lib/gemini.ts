@@ -23,7 +23,7 @@ async function generateJSON<T>(prompt: string): Promise<T> {
       "Authorization": `Bearer ${getApiKey()}`,
       "Content-Type": "application/json",
       "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
-      "X-Title": "NextVideo AI",
+      "X-Title": "UploadIQ",
     },
     body: JSON.stringify({
       model: MODEL,

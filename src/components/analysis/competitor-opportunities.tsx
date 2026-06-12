@@ -75,16 +75,18 @@ export function CompetitorOpportunities({ competitors, userIdeas }: Props) {
   return (
     <div className="space-y-4">
       {/* Header with FOMO stat */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="w-1 h-5 rounded-full bg-red-400" />
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-            Missed Opportunities
+            Competitor Gaps — Your Missed Views
           </span>
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-red-400/80 font-medium">
-          <AlertTriangle className="w-3.5 h-3.5" />
-          {formatNumber(totalMissedViews)} views your competitors got — you didn&apos;t
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-400/8 border border-red-400/15">
+          <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" />
+          <span className="text-xs font-bold text-red-300">
+            {formatNumber(totalMissedViews)} views earned by competitors on topics you haven&apos;t touched
+          </span>
         </div>
       </div>
 
@@ -155,8 +157,22 @@ export function CompetitorOpportunities({ competitors, userIdeas }: Props) {
               </div>
 
               {/* Reason */}
-              <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2.5">
+              <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2.5 mb-3">
                 <p className="text-xs text-white/60 leading-snug">{opp.reason}</p>
+              </div>
+
+              {/* Potential impact */}
+              <div className={`rounded-lg px-3 py-2.5 border ${cfg.border} ${cfg.bg}`}>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-white/40 mb-1.5">
+                  Potential Impact If You Make This
+                </p>
+                <p className={`text-xs font-semibold leading-snug ${cfg.color}`}>
+                  {opp.impact === "Very High"
+                    ? `Based on ${opp.competitorName}'s performance, this could generate 200K+ views on your channel`
+                    : opp.impact === "High"
+                    ? `This topic drove 50K–200K views for competitors — strong opportunity for your audience`
+                    : `Consistent 10K–50K range — a solid win with lower competition`}
+                </p>
               </div>
             </motion.div>
           );

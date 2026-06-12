@@ -36,7 +36,7 @@ export function DashboardSidebar() {
           <div className="w-8 h-8 rounded-lg bg-gradient-purple flex items-center justify-center glow-purple">
             <Youtube className="w-4 h-4 text-white" />
           </div>
-          <span className="font-bold text-white text-sm">NextVideo AI</span>
+          <span className="font-bold text-white text-sm">UploadIQ</span>
         </Link>
       </div>
 

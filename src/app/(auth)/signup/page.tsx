@@ -80,7 +80,7 @@ export default function SignupPage() {
           <div className="w-10 h-10 rounded-xl bg-gradient-purple flex items-center justify-center">
             <Youtube className="w-5 h-5 text-white" />
           </div>
-          <span className="font-bold text-lg text-white">NextVideo AI</span>
+          <span className="font-bold text-lg text-white">UploadIQ</span>
         </Link>
 
         <div className="glass rounded-2xl p-8 shadow-glass">

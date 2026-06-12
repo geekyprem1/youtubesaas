@@ -11,12 +11,33 @@ export async function GET() {
   const [profileRes, usageRes, analysesRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single(),
     supabase.from("daily_usage").select("count").eq("user_id", user.id).eq("date", today).single(),
-    supabase.from("analyses").select("id, status, created_at, channel_id, channels(name, thumbnail_url, subscribers)").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
+    supabase.from("analyses")
+      .select("id, status, created_at, channel_id, channel_url")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(20),
   ]);
 
   const plan = profileRes.data?.plan ?? "free";
   const dailyUsed = usageRes.data?.count ?? 0;
   const dailyLimit = plan === "pro" ? 999 : 3;
+
+  // Fetch channel data separately for analyses that have a channel_id
+  const analyses = analysesRes.data ?? [];
+  const channelIds = [...new Set(analyses.map((a) => a.channel_id).filter(Boolean))];
+
+  let channelMap: Record<string, { name: string; thumbnail_url: string | null; subscribers: number }> = {};
+  if (channelIds.length > 0) {
+    const { data: channelsData } = await supabase
+      .from("channels")
+      .select("id, name, thumbnail_url, subscribers")
+      .in("id", channelIds);
+    if (channelsData) {
+      for (const ch of channelsData) {
+        channelMap[ch.id] = { name: ch.name, thumbnail_url: ch.thumbnail_url, subscribers: ch.subscribers };
+      }
+    }
+  }
 
   return NextResponse.json({
     user: {
@@ -28,6 +49,26 @@ export async function GET() {
       dailyAnalysesUsed: dailyUsed,
       dailyAnalysesLimit: dailyLimit,
     },
-    analyses: analysesRes.data ?? [],
+    analyses: analyses.map((a) => ({
+      id: a.id,
+      status: a.status,
+      created_at: a.created_at,
+      channel_id: a.channel_id,
+      channels: a.channel_id && channelMap[a.channel_id]
+        ? channelMap[a.channel_id]
+        : { name: extractNameFromUrl(a.channel_url), thumbnail_url: null, subscribers: 0 },
+    })),
   });
+}
+
+function extractNameFromUrl(url: string | null): string {
+  if (!url) return "Unknown Channel";
+  try {
+    const u = new URL(url);
+    const parts = u.pathname.split("/").filter(Boolean);
+    const handle = parts.find((p) => p.startsWith("@")) ?? parts[parts.length - 1];
+    return handle ? decodeURIComponent(handle) : "Unknown Channel";
+  } catch {
+    return url;
+  }
 }

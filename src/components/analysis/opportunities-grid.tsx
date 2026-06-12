@@ -37,24 +37,30 @@ const PRIORITY_CONFIG = [
     accent: "from-orange-500/20 to-red-500/10 border-orange-500/25",
     badge: "bg-orange-500/20 text-orange-300 border-orange-500/30",
     cta: "Start This Video",
+    videoBadge: "🔥 Make This Now",
+    videoBadgeStyle: "text-orange-300 bg-orange-500/15 border-orange-500/25",
   },
   {
     rank: 2,
-    label: "Make This Next",
-    emoji: "",
+    label: "Rising Fast",
+    emoji: "⚡",
     icon: Clock,
     accent: "from-primary/15 to-accent/8 border-primary/25",
     badge: "bg-primary/15 text-accent border-primary/25",
     cta: "Plan This Video",
+    videoBadge: "⚡ Rising Fast",
+    videoBadgeStyle: "text-violet-300 bg-primary/15 border-primary/25",
   },
   {
     rank: 3,
-    label: "Save For Later",
-    emoji: "",
+    label: "High Potential",
+    emoji: "📈",
     icon: Bookmark,
     accent: "from-white/[0.04] to-transparent border-border/50",
     badge: "bg-secondary text-muted-foreground border-border/60",
     cta: "Queue This Video",
+    videoBadge: "📈 High Potential",
+    videoBadgeStyle: "text-blue-300 bg-blue-500/10 border-blue-500/20",
   },
 ];
 
@@ -100,7 +106,7 @@ function PriorityCard({
         <div className="flex items-center justify-between mb-5">
           <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${config.badge}`}>
             {config.emoji && <span>{config.emoji}</span>}
-            #{rank} {config.label}
+            {config.videoBadge}
           </span>
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
             idea.difficulty === "Easy" ? "text-green-400 bg-green-400/10" :
@@ -200,12 +206,10 @@ function CollapseRow({
           <span className="text-xs text-muted-foreground w-6 shrink-0">#{index + 4}</span>
           <span className="flex-1 text-sm font-medium text-white line-clamp-1">{idea.title}</span>
           <div className="flex items-center gap-3 shrink-0">
+            <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/20">
+              💎 Hidden
+            </span>
             <span className={`text-sm font-black ${color}`}>{score}</span>
-            <span className={`text-xs px-2 py-0.5 rounded-full ${
-              idea.difficulty === "Easy" ? "text-green-400 bg-green-400/10" :
-              idea.difficulty === "Medium" ? "text-yellow-400 bg-yellow-400/10" :
-              "text-red-400 bg-red-400/10"
-            }`}>{idea.difficulty}</span>
             {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
           </div>
         </button>

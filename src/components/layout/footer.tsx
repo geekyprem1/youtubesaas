@@ -10,7 +10,7 @@ export function Footer() {
             <div className="w-8 h-8 rounded-lg bg-gradient-purple flex items-center justify-center">
               <Youtube className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-white">NextVideo AI</span>
+            <span className="font-bold text-white">UploadIQ</span>
           </Link>
 
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
@@ -21,7 +21,7 @@ export function Footer() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} NextVideo AI. All rights reserved.
+            © {new Date().getFullYear()} UploadIQ. All rights reserved.
           </p>
         </div>
       </div>
