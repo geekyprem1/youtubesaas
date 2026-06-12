@@ -79,12 +79,18 @@ export async function POST(req: NextRequest) {
     // Run pipeline in background
     runAnalysisPipeline(analysisId, channelUrl, admin);
 
-    // Increment usage
-    await admin.from("daily_usage").upsert({
-      user_id: user.id,
-      date: today,
-      count: currentUsage + 1,
+    // Atomic increment — avoid race condition where multiple fast requests all read count=0
+    const { error: upsertErr } = await admin.rpc("increment_daily_usage", {
+      p_user_id: user.id,
+      p_date: today,
     });
+    // Fallback if RPC not available
+    if (upsertErr) {
+      await admin.from("daily_usage").upsert(
+        { user_id: user.id, date: today, count: currentUsage + 1 },
+        { onConflict: "user_id,date" }
+      );
+    }
 
     return NextResponse.json({ analysisId });
   } catch (error) {
