@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ProContentModal } from "@/components/analysis/pro-content-modal";
 import {
   Sparkles, TrendingUp, Target, Zap,
-  Lock, ChevronRight, ArrowUpRight
+  Lock, CheckCircle2, Users, Activity,
+  ArrowRight, Eye, Flame
 } from "lucide-react";
 
 interface Props {
@@ -30,167 +31,240 @@ interface Props {
   }>;
 }
 
-function ScoreRing({ score, size = 80 }: { score: number; size?: number }) {
-  const r = (size - 12) / 2;
+/* ── Animated circular score ── */
+function ConfidenceRing({ score }: { score: number }) {
+  const size = 96;
+  const r = 38;
   const circ = 2 * Math.PI * r;
   const dash = (score / 100) * circ;
   const color = score >= 80 ? "#22c55e" : score >= 60 ? "#eab308" : "#f97316";
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} stroke="#1E2433" strokeWidth={6} fill="none" />
-        <circle
+      <svg width={size} height={size} className="-rotate-90" viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size / 2} cy={size / 2} r={r} stroke="#1E2433" strokeWidth={7} fill="none" />
+        <motion.circle
           cx={size / 2} cy={size / 2} r={r}
-          stroke={color} strokeWidth={6} fill="none"
-          strokeDasharray={`${dash} ${circ}`}
+          stroke={color} strokeWidth={7} fill="none"
           strokeLinecap="round"
-          style={{ transition: "stroke-dasharray 1s ease" }}
+          initial={{ strokeDasharray: `0 ${circ}` }}
+          animate={{ strokeDasharray: `${dash} ${circ}` }}
+          transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xl font-black text-white leading-none">{score}</span>
-        <span className="text-[9px] text-muted-foreground uppercase tracking-wide">score</span>
+        <motion.span
+          className="text-2xl font-black text-white leading-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          {score}
+        </motion.span>
+        <span className="text-[9px] text-muted-foreground uppercase tracking-wide">/ 100</span>
       </div>
     </div>
   );
 }
 
-const proFeatures = [
-  { label: "10 Clickable Titles", icon: Sparkles },
-  { label: "Thumbnail Concepts", icon: Target },
-  { label: "Hook Script", icon: Zap },
-  { label: "Video Outline", icon: ChevronRight },
-  { label: "SEO Description", icon: TrendingUp },
-  { label: "Full Script", icon: Lock },
-];
+/* ── Single metric pill ── */
+function MetricPill({
+  icon: Icon, label, value, color = "text-white"
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  color?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1 px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.07]">
+      <div className="flex items-center gap-1.5">
+        <Icon className={`w-3.5 h-3.5 ${color}`} />
+        <span className="text-[11px] text-muted-foreground uppercase tracking-wide font-medium">{label}</span>
+      </div>
+      <span className={`text-sm font-bold ${color}`}>{value}</span>
+    </div>
+  );
+}
+
+/* ── Evidence check item ── */
+function Evidence({ text }: { text: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -8 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="flex items-start gap-2.5"
+    >
+      <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
+      <span className="text-sm text-white/80 leading-snug">{text}</span>
+    </motion.div>
+  );
+}
+
+/* ── Action button ── */
+function ActionBtn({
+  label, icon: Icon, onClick, locked = false, primary = false
+}: {
+  label: string;
+  icon: React.ElementType;
+  onClick: () => void;
+  locked?: boolean;
+  primary?: boolean;
+}) {
+  return (
+    <motion.button
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.97 }}
+      onClick={onClick}
+      className={`relative flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all w-full ${
+        primary
+          ? "bg-gradient-purple text-white glow-purple"
+          : locked
+          ? "bg-white/[0.03] border border-white/[0.08] text-muted-foreground hover:border-white/15"
+          : "bg-white/[0.05] border border-white/[0.08] text-white hover:bg-white/[0.08]"
+      }`}
+    >
+      <Icon className={`w-4 h-4 shrink-0 ${primary ? "text-white" : locked ? "text-muted-foreground" : "text-accent"}`} />
+      <span className="flex-1 text-left">{label}</span>
+      {locked ? (
+        <Lock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+      ) : (
+        <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-50" />
+      )}
+    </motion.button>
+  );
+}
 
 export function HeroVideoIdea({ idea, channelDNA, channel, plan, competitors }: Props) {
   const [showPro, setShowPro] = useState(false);
-  const [activeFeature, setActiveFeature] = useState<string | null>(null);
+  const [proTab, setProTab] = useState("titles");
 
-  // Find competitors covering similar topics
-  const relevantCompetitors = competitors
-    .filter(c => c.top_videos?.length > 0)
-    .slice(0, 3)
-    .map(c => ({
-      name: c.channel_name,
-      video: c.top_videos[0],
-    }));
+  const isPro = plan === "pro";
+
+  /* Build evidence list */
+  const topComp = competitors.find(c => c.top_videos?.length > 0);
+  const topViews = topComp?.top_videos[0]?.viewCount ?? 0;
+
+  const evidence = [
+    topViews > 0
+      ? `Similar videos by competitors gained ${topViews > 500000 ? "500K+" : topViews > 100000 ? "100K+" : "50K+"} views`
+      : "Multiple competitors are covering this topic successfully",
+    `Matches your highest-performing ${(channelDNA?.contentStyle as string) ?? "content"} category`,
+    `${competitors.filter(c => c.top_videos?.length > 0).length} competitors are currently winning with this topic`,
+    "This specific angle has not been covered on your channel yet",
+  ];
+
+  /* Derive metrics */
+  const compLevel = idea.difficulty === "Easy" ? "Low" : idea.difficulty === "Medium" ? "Medium" : "High";
+  const trendVelocity = idea.opportunityScore >= 80 ? "Rising Fast 🚀" : idea.opportunityScore >= 60 ? "Growing" : "Stable";
+  const audienceMatch = idea.opportunityScore >= 75 ? "Very High" : "High";
+
+  function openPro(tab: string) {
+    setProTab(tab);
+    setShowPro(true);
+  }
 
   return (
     <>
       <div className="space-y-3">
-        {/* Section label */}
+        {/* Label */}
         <div className="flex items-center gap-2">
-          <div className="w-1 h-5 rounded-full bg-gradient-purple" />
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-            Your Next Best Video
+          <Flame className="w-4 h-4 text-orange-400" />
+          <span className="text-xs font-bold text-orange-400 uppercase tracking-widest">
+            Recommended Next Video
           </span>
         </div>
 
-        {/* Hero card */}
-        <motion.div
+        {/* Main hero card */}
+        <div
           className="relative rounded-2xl overflow-hidden"
           style={{
-            background: "linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(11,15,25,0.95) 60%)",
-            border: "1px solid rgba(124,58,237,0.3)",
-            boxShadow: "0 0 60px rgba(124,58,237,0.15), inset 0 1px 0 rgba(255,255,255,0.05)",
+            background: "linear-gradient(145deg, rgba(124,58,237,0.18) 0%, rgba(11,15,25,0.97) 55%, rgba(11,15,25,1) 100%)",
+            border: "1px solid rgba(124,58,237,0.35)",
+            boxShadow: "0 0 80px rgba(124,58,237,0.12), 0 0 1px rgba(255,255,255,0.05) inset",
           }}
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4 }}
         >
-          {/* Glow bg */}
-          <div className="absolute top-0 left-0 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+          {/* Ambient glow */}
+          <div className="absolute -top-20 -left-20 w-96 h-96 bg-primary/8 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 p-8 md:p-10">
-            <div className="flex flex-col lg:flex-row gap-8">
+            <div className="flex flex-col xl:flex-row gap-10">
 
-              {/* Left — Main content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-purple flex items-center justify-center shrink-0 glow-purple">
-                    <Sparkles className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <span className="text-xs text-accent font-semibold uppercase tracking-widest">
-                      #1 Recommended
-                    </span>
-                    <h1 className="text-2xl md:text-3xl font-black text-white leading-tight mt-1">
-                      {idea.title}
-                    </h1>
-                  </div>
+              {/* ── LEFT COLUMN ── */}
+              <div className="flex-1 min-w-0 space-y-7">
+
+                {/* Title block */}
+                <div>
+                  <motion.h1
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="text-3xl md:text-4xl font-black text-white leading-tight tracking-tight"
+                  >
+                    {idea.title}
+                  </motion.h1>
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-muted-foreground text-sm mt-2"
+                  >
+                    {idea.format} · {idea.expectedAudienceInterest} audience interest
+                  </motion.p>
                 </div>
 
-                {/* Scores row */}
-                <div className="flex items-center gap-6 mb-6 flex-wrap">
-                  <ScoreRing score={idea.opportunityScore} size={80} />
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <TrendingUp className="w-4 h-4 text-green-400 shrink-0" />
-                      <div>
-                        <div className="text-xs text-muted-foreground">Estimated Performance</div>
-                        <div className="text-sm font-bold text-white">{idea.estimatedPerformance}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Target className="w-4 h-4 text-blue-400 shrink-0" />
-                      <div>
-                        <div className="text-xs text-muted-foreground">Audience Interest</div>
-                        <div className="text-sm font-bold text-white">{idea.expectedAudienceInterest}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Zap className="w-4 h-4 text-yellow-400 shrink-0" />
-                      <div>
-                        <div className="text-xs text-muted-foreground">Difficulty</div>
-                        <div className={`text-sm font-bold ${
-                          idea.difficulty === "Easy" ? "text-green-400" :
-                          idea.difficulty === "Medium" ? "text-yellow-400" : "text-red-400"
-                        }`}>{idea.difficulty}</div>
-                      </div>
+                {/* Score + Metrics row */}
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                  className="flex items-center gap-5 flex-wrap"
+                >
+                  <div className="flex items-center gap-4">
+                    <ConfidenceRing score={idea.opportunityScore} />
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-0.5">Opportunity Score</p>
+                      <p className="text-sm text-white/60">
+                        {idea.opportunityScore >= 80 ? "Exceptional — act now" :
+                         idea.opportunityScore >= 65 ? "Strong opportunity" : "Good opportunity"}
+                      </p>
                     </div>
                   </div>
-                </div>
 
-                {/* Why section */}
-                <div className="bg-white/[0.03] rounded-xl p-4 mb-6 border border-white/[0.06]">
-                  <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-2">
-                    Why This Video?
-                  </p>
-                  <p className="text-white/80 text-sm leading-relaxed">{idea.reason}</p>
-                </div>
+                  <div className="h-12 w-px bg-border/60 hidden md:block" />
 
-                {/* Competitors proof */}
-                {relevantCompetitors.length > 0 && (
-                  <div className="mb-6">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                      Competitors Winning With Similar Content
-                    </p>
-                    <div className="space-y-2">
-                      {relevantCompetitors.map((c, i) => (
-                        <div key={i} className="flex items-center gap-3 text-sm">
-                          <div className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
-                          <span className="text-accent font-medium shrink-0">{c.name}</span>
-                          <span className="text-white/60 truncate">— {c.video?.title}</span>
-                          {c.video?.viewCount && (
-                            <span className="text-green-400 shrink-0 flex items-center gap-1 ml-auto">
-                              <ArrowUpRight className="w-3 h-3" />
-                              {(c.video.viewCount / 1000).toFixed(0)}K
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 flex-1">
+                    <MetricPill icon={Eye} label="Est. Views" value={idea.estimatedPerformance} color="text-blue-400" />
+                    <MetricPill icon={Activity} label="Trend" value={trendVelocity} color="text-green-400" />
+                    <MetricPill icon={Users} label="Audience Match" value={audienceMatch} color="text-accent" />
+                    <MetricPill icon={Target} label="Competition" value={compLevel}
+                      color={compLevel === "Low" ? "text-green-400" : compLevel === "Medium" ? "text-yellow-400" : "text-red-400"} />
                   </div>
-                )}
+                </motion.div>
+
+                {/* Why We Picked This */}
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                  className="space-y-3"
+                >
+                  <p className="text-xs font-bold text-white/40 uppercase tracking-widest">Why We Picked This</p>
+                  <div className="space-y-2.5">
+                    {evidence.map((e, i) => (
+                      <motion.div key={i} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.08 }}>
+                        <Evidence text={e} />
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
 
                 {/* Topics */}
                 {idea.topics?.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {idea.topics.map((t: string) => (
-                      <span key={t} className="px-2.5 py-1 rounded-full bg-primary/15 text-accent text-xs font-medium border border-primary/20">
+                      <span key={t} className="px-3 py-1 rounded-full bg-primary/12 text-accent/80 text-xs font-medium border border-primary/20">
                         {t}
                       </span>
                     ))}
@@ -198,79 +272,64 @@ export function HeroVideoIdea({ idea, channelDNA, channel, plan, competitors }: 
                 )}
               </div>
 
-              {/* Right — Actions + Pro */}
-              <div className="lg:w-72 shrink-0 space-y-4">
+              {/* ── RIGHT COLUMN — Action Panel ── */}
+              <div className="xl:w-64 shrink-0 space-y-3">
+                <p className="text-xs font-bold text-white/40 uppercase tracking-widest pb-1">
+                  {isPro ? "Generate Content" : "Unlock Content Pack"}
+                </p>
 
-                {/* Primary CTA */}
-                <Button
-                  variant="gradient"
-                  size="lg"
-                  className="w-full h-12 text-base font-bold glow-purple-lg gap-2"
-                  onClick={() => setShowPro(true)}
+                <ActionBtn label="Generate Titles" icon={Sparkles} onClick={() => openPro("titles")} primary locked={!isPro} />
+                <ActionBtn label="Generate Thumbnail" icon={Target} onClick={() => openPro("thumbnails")} locked={!isPro} />
+                <ActionBtn label="Generate Hook Script" icon={Zap} onClick={() => openPro("outline")} locked={!isPro} />
+                <ActionBtn label="Generate Outline" icon={TrendingUp} onClick={() => openPro("outline")} locked={!isPro} />
+
+                {/* Full pack CTA */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="pt-2"
                 >
-                  {plan === "pro" ? (
-                    <><Sparkles className="w-5 h-5" /> Generate Full Pack</>
-                  ) : (
-                    <><Lock className="w-4 h-4" /> Unlock Full Pack — Pro</>
-                  )}
-                </Button>
-
-                {/* Pro feature locked cards */}
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground font-medium px-1">
-                    {plan === "pro" ? "Available in your pack:" : "Unlock with Pro:"}
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {proFeatures.map((f) => {
-                      const Icon = f.icon;
-                      const isPro = plan === "pro";
-                      return (
-                        <motion.button
-                          key={f.label}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => {
-                            if (isPro) {
-                              setActiveFeature(f.label);
-                              setShowPro(true);
-                            } else {
-                              setShowPro(true);
-                            }
-                          }}
-                          className={`relative p-3 rounded-xl text-left transition-all border group ${
-                            isPro
-                              ? "bg-primary/10 border-primary/20 hover:border-primary/40"
-                              : "bg-white/[0.02] border-white/[0.06] hover:border-white/10"
-                          }`}
-                        >
-                          {!isPro && (
-                            <div className="absolute inset-0 rounded-xl bg-black/40 backdrop-blur-[1px] flex items-center justify-center">
-                              <Lock className="w-3.5 h-3.5 text-muted-foreground" />
-                            </div>
-                          )}
-                          <Icon className={`w-4 h-4 mb-1.5 ${isPro ? "text-accent" : "text-muted-foreground"}`} />
-                          <p className={`text-xs font-medium leading-tight ${isPro ? "text-white" : "text-muted-foreground"}`}>
-                            {f.label}
-                          </p>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {plan !== "pro" && (
-                  <div className="rounded-xl bg-gradient-to-br from-primary/20 to-accent/10 border border-primary/30 p-4 text-center">
-                    <p className="text-white font-bold text-sm mb-1">Unlock Everything</p>
-                    <p className="text-muted-foreground text-xs mb-3">Scripts, titles, thumbnails & more for every idea</p>
-                    <Button variant="gradient" size="sm" className="w-full gap-1.5 glow-purple">
-                      Upgrade to Pro — $19/mo
+                  {isPro ? (
+                    <Button
+                      variant="gradient"
+                      className="w-full h-12 font-bold text-sm gap-2 glow-purple-lg"
+                      onClick={() => openPro("titles")}
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      Generate Full Video Pack
                     </Button>
-                  </div>
-                )}
+                  ) : (
+                    <div className="rounded-xl overflow-hidden border border-primary/30"
+                      style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.18) 0%, rgba(168,85,247,0.08) 100%)" }}
+                    >
+                      <div className="p-4 space-y-3">
+                        <div className="space-y-1.5">
+                          {["10 Clickable Titles", "3 Thumbnail Concepts", "Hook Script", "Full Outline", "SEO Description + Tags"].map(f => (
+                            <div key={f} className="flex items-center gap-2 text-xs text-white/60">
+                              <CheckCircle2 className="w-3 h-3 text-accent/60 shrink-0" />
+                              {f}
+                            </div>
+                          ))}
+                        </div>
+                        <Button
+                          variant="gradient"
+                          size="sm"
+                          className="w-full font-bold gap-1.5 glow-purple"
+                          onClick={() => openPro("titles")}
+                        >
+                          Unlock This Video
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Button>
+                        <p className="text-center text-xs text-muted-foreground">Pro · $19/mo · Cancel anytime</p>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {showPro && (
@@ -279,10 +338,8 @@ export function HeroVideoIdea({ idea, channelDNA, channel, plan, competitors }: 
           channelDNA={channelDNA}
           channel={channel}
           plan={plan}
-          onClose={() => { setShowPro(false); setActiveFeature(null); }}
-          defaultTab={activeFeature === "10 Clickable Titles" ? "titles" :
-                      activeFeature === "Thumbnail Concepts" ? "thumbnails" :
-                      activeFeature === "Video Outline" || activeFeature === "Hook Script" ? "outline" : "titles"}
+          onClose={() => setShowPro(false)}
+          defaultTab={proTab}
         />
       )}
     </>

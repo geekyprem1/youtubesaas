@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ProContentModal } from "@/components/analysis/pro-content-modal";
 import {
-  TrendingUp, Target, Zap, Lock,
-  ChevronDown, ChevronUp, ArrowUpRight
+  Flame, Clock, Bookmark, ChevronDown,
+  ChevronUp, ArrowRight, Lock, Zap, TrendingUp, Target
 } from "lucide-react";
 
 interface VideoIdea {
@@ -28,132 +28,139 @@ interface Props {
   plan: "free" | "pro";
 }
 
-function MiniScoreBar({ score }: { score: number }) {
-  const color = score >= 80 ? "bg-green-400" : score >= 60 ? "bg-yellow-400" : "bg-orange-400";
+const PRIORITY_CONFIG = [
+  {
+    rank: 1,
+    label: "Make This Now",
+    emoji: "🔥",
+    icon: Flame,
+    accent: "from-orange-500/20 to-red-500/10 border-orange-500/25",
+    badge: "bg-orange-500/20 text-orange-300 border-orange-500/30",
+    cta: "Start This Video",
+  },
+  {
+    rank: 2,
+    label: "Make This Next",
+    emoji: "",
+    icon: Clock,
+    accent: "from-primary/15 to-accent/8 border-primary/25",
+    badge: "bg-primary/15 text-accent border-primary/25",
+    cta: "Plan This Video",
+  },
+  {
+    rank: 3,
+    label: "Save For Later",
+    emoji: "",
+    icon: Bookmark,
+    accent: "from-white/[0.04] to-transparent border-border/50",
+    badge: "bg-secondary text-muted-foreground border-border/60",
+    cta: "Queue This Video",
+  },
+];
+
+function ScoreBar({ score }: { score: number }) {
+  const color = score >= 80 ? "#22c55e" : score >= 60 ? "#eab308" : "#f97316";
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
+    <div className="flex items-center gap-3">
+      <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
         <motion.div
-          className={`h-full ${color} rounded-full`}
+          className="h-full rounded-full"
+          style={{ backgroundColor: color }}
           initial={{ width: 0 }}
           animate={{ width: `${score}%` }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
         />
       </div>
-      <span className={`text-xs font-bold tabular-nums w-6 text-right ${
-        score >= 80 ? "text-green-400" : score >= 60 ? "text-yellow-400" : "text-orange-400"
-      }`}>{score}</span>
+      <span className="text-sm font-black tabular-nums" style={{ color }}>{score}</span>
     </div>
   );
 }
 
-function IdeaCard({
-  idea, index, channelDNA, channel, plan
+function PriorityCard({
+  idea, rank, channelDNA, channel, plan
 }: {
   idea: VideoIdea;
-  index: number;
+  rank: number;
   channelDNA: Record<string, unknown>;
   channel: Record<string, string | number>;
   plan: "free" | "pro";
 }) {
-  const [expanded, setExpanded] = useState(false);
   const [showPro, setShowPro] = useState(false);
+  const config = PRIORITY_CONFIG[rank - 1] ?? PRIORITY_CONFIG[2];
 
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.04 }}
-        className="glass rounded-xl overflow-hidden hover:border-primary/25 transition-all duration-200 group"
+        transition={{ delay: rank * 0.1 }}
+        className={`relative rounded-2xl bg-gradient-to-br p-6 border ${config.accent}`}
       >
-        <div
-          className="p-5 cursor-pointer"
-          onClick={() => setExpanded(!expanded)}
-        >
-          {/* Rank + Score */}
-          <div className="flex items-start gap-3 mb-3">
-            <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0 mt-0.5">
-              {index + 1}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-white leading-snug line-clamp-2 group-hover:text-accent transition-colors">
-                {idea.title}
-              </h3>
-            </div>
-            {expanded ? (
-              <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-            )}
+        {/* Rank badge */}
+        <div className="flex items-center justify-between mb-5">
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${config.badge}`}>
+            {config.emoji && <span>{config.emoji}</span>}
+            #{rank} {config.label}
+          </span>
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+            idea.difficulty === "Easy" ? "text-green-400 bg-green-400/10" :
+            idea.difficulty === "Medium" ? "text-yellow-400 bg-yellow-400/10" :
+            "text-red-400 bg-red-400/10"
+          }`}>
+            {idea.difficulty}
+          </span>
+        </div>
+
+        {/* Title */}
+        <h3 className="text-lg font-black text-white leading-tight mb-4">
+          {idea.title}
+        </h3>
+
+        {/* Score bar */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs text-muted-foreground">Opportunity Score</span>
           </div>
+          <ScoreBar score={idea.opportunityScore} />
+        </div>
 
-          {/* Score bar */}
-          <MiniScoreBar score={idea.opportunityScore} />
-
-          {/* Meta */}
-          <div className="flex items-center gap-3 mt-3 flex-wrap">
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-              idea.difficulty === "Easy" ? "text-green-400 bg-green-400/10" :
-              idea.difficulty === "Medium" ? "text-yellow-400 bg-yellow-400/10" :
-              "text-red-400 bg-red-400/10"
-            }`}>
-              {idea.difficulty}
-            </span>
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <ArrowUpRight className="w-3 h-3" />
-              {idea.estimatedPerformance}
-            </span>
-            {idea.format && (
-              <span className="text-xs text-muted-foreground bg-secondary/60 px-2 py-0.5 rounded-full">
-                {idea.format}
-              </span>
-            )}
+        {/* Metrics */}
+        <div className="grid grid-cols-2 gap-2 mb-5">
+          <div className="bg-white/[0.03] rounded-xl p-3">
+            <TrendingUp className="w-3.5 h-3.5 text-green-400 mb-1" />
+            <p className="text-xs text-muted-foreground">Est. Views</p>
+            <p className="text-xs font-bold text-white mt-0.5">{idea.estimatedPerformance}</p>
+          </div>
+          <div className="bg-white/[0.03] rounded-xl p-3">
+            <Target className="w-3.5 h-3.5 text-blue-400 mb-1" />
+            <p className="text-xs text-muted-foreground">Format</p>
+            <p className="text-xs font-bold text-white mt-0.5">{idea.format}</p>
           </div>
         </div>
 
-        {/* Expanded content */}
-        <AnimatePresence>
-          {expanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="border-t border-border/40 overflow-hidden"
-            >
-              <div className="p-5 pt-4 space-y-4">
-                <p className="text-sm text-white/70 leading-relaxed">{idea.reason}</p>
+        {/* Reason */}
+        <p className="text-sm text-white/60 leading-relaxed mb-5 line-clamp-2">
+          {idea.reason}
+        </p>
 
-                {idea.topics?.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {idea.topics.map((t: string) => (
-                      <span key={t} className="px-2 py-0.5 rounded-full bg-primary/10 text-accent text-xs">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <Button
-                  size="sm"
-                  className={`w-full gap-2 h-9 text-xs ${
-                    plan === "pro"
-                      ? "bg-gradient-purple text-white"
-                      : "bg-secondary hover:bg-secondary/80 text-white border border-border/60"
-                  }`}
-                  onClick={(e) => { e.stopPropagation(); setShowPro(true); }}
-                >
-                  {plan === "pro" ? (
-                    <><Zap className="w-3.5 h-3.5" /> Generate Content Pack</>
-                  ) : (
-                    <><Lock className="w-3.5 h-3.5" /> Unlock Titles, Thumbnail & Script</>
-                  )}
-                </Button>
-              </div>
-            </motion.div>
+        {/* CTA */}
+        <Button
+          className={`w-full h-10 text-sm font-bold gap-2 ${
+            rank === 1
+              ? "bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 text-white border-0"
+              : rank === 2
+              ? "bg-gradient-purple text-white glow-purple"
+              : "bg-white/[0.06] border border-border/60 text-white hover:bg-white/[0.1]"
+          }`}
+          onClick={() => setShowPro(true)}
+        >
+          {plan === "pro" ? (
+            <><Zap className="w-4 h-4" /> {config.cta}</>
+          ) : (
+            <><Lock className="w-4 h-4" /> Unlock This Video</>
           )}
-        </AnimatePresence>
+          <ArrowRight className="w-4 h-4 ml-auto" />
+        </Button>
       </motion.div>
 
       {showPro && (
@@ -169,14 +176,74 @@ function IdeaCard({
   );
 }
 
-export function OpportunitiesGrid({ ideas, channelDNA, channel, plan }: Props) {
-  const [showAll, setShowAll] = useState(false);
-  const displayedIdeas = showAll ? ideas : ideas.slice(0, 9);
+function CollapseRow({
+  idea, index, channelDNA, channel, plan
+}: {
+  idea: VideoIdea;
+  index: number;
+  channelDNA: Record<string, unknown>;
+  channel: Record<string, string | number>;
+  plan: "free" | "pro";
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [showPro, setShowPro] = useState(false);
+  const score = idea.opportunityScore;
+  const color = score >= 80 ? "text-green-400" : score >= 60 ? "text-yellow-400" : "text-orange-400";
 
-  // Stats
-  const avgScore = Math.round(ideas.reduce((s, i) => s + i.opportunityScore, 0) / Math.max(ideas.length, 1));
-  const highOpp = ideas.filter(i => i.opportunityScore >= 80).length;
-  const easyWins = ideas.filter(i => i.difficulty === "Easy").length;
+  return (
+    <>
+      <div className="border border-border/40 rounded-xl overflow-hidden hover:border-border/70 transition-colors">
+        <button
+          className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
+          onClick={() => setExpanded(!expanded)}
+        >
+          <span className="text-xs text-muted-foreground w-6 shrink-0">#{index + 4}</span>
+          <span className="flex-1 text-sm font-medium text-white line-clamp-1">{idea.title}</span>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className={`text-sm font-black ${color}`}>{score}</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full ${
+              idea.difficulty === "Easy" ? "text-green-400 bg-green-400/10" :
+              idea.difficulty === "Medium" ? "text-yellow-400 bg-yellow-400/10" :
+              "text-red-400 bg-red-400/10"
+            }`}>{idea.difficulty}</span>
+            {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+          </div>
+        </button>
+
+        <AnimatePresence>
+          {expanded && (
+            <motion.div
+              initial={{ height: 0 }}
+              animate={{ height: "auto" }}
+              exit={{ height: 0 }}
+              className="overflow-hidden border-t border-border/40"
+            >
+              <div className="px-5 py-4 space-y-3">
+                <p className="text-sm text-white/60 leading-relaxed">{idea.reason}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">{idea.estimatedPerformance}</span>
+                  <Button size="sm" className="h-8 text-xs gap-1.5 bg-gradient-purple text-white"
+                    onClick={() => setShowPro(true)}>
+                    {plan === "pro" ? <><Zap className="w-3 h-3" /> Generate</> : <><Lock className="w-3 h-3" /> Unlock</>}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {showPro && (
+        <ProContentModal idea={idea} channelDNA={channelDNA} channel={channel} plan={plan} onClose={() => setShowPro(false)} />
+      )}
+    </>
+  );
+}
+
+export function OpportunitiesGrid({ ideas, channelDNA, channel, plan }: Props) {
+  const [showMore, setShowMore] = useState(false);
+  const top3 = ideas.slice(0, 3);
+  const rest = ideas.slice(3);
 
   return (
     <div className="space-y-4">
@@ -184,33 +251,20 @@ export function OpportunitiesGrid({ ideas, channelDNA, channel, plan }: Props) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-1 h-5 rounded-full bg-accent" />
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-            Top {ideas.length} Video Opportunities
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+            Top Video Opportunities
           </span>
         </div>
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <TrendingUp className="w-3.5 h-3.5 text-green-400" />
-            {highOpp} high opportunity
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Target className="w-3.5 h-3.5 text-yellow-400" />
-            {easyWins} easy wins
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5 text-accent" />
-            Avg score: {avgScore}
-          </span>
-        </div>
+        <span className="text-xs text-muted-foreground">{ideas.length} ideas found</span>
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {displayedIdeas.map((idea, i) => (
-          <IdeaCard
+      {/* Top 3 priority cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {top3.map((idea, i) => (
+          <PriorityCard
             key={idea.id || i}
             idea={idea}
-            index={i + 1}
+            rank={i + 1}
             channelDNA={channelDNA}
             channel={channel}
             plan={plan}
@@ -218,23 +272,42 @@ export function OpportunitiesGrid({ ideas, channelDNA, channel, plan }: Props) {
         ))}
       </div>
 
-      {/* Show more / Pro upsell */}
-      {ideas.length > 9 && (
-        <div className="text-center pt-2">
-          {showAll ? (
-            <Button variant="ghost" size="sm" onClick={() => setShowAll(false)} className="text-muted-foreground gap-2">
-              <ChevronUp className="w-4 h-4" /> Show Less
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAll(true)}
-              className="gap-2 border-border/60 text-white hover:bg-secondary"
-            >
-              Show {ideas.length - 9} More Ideas <ChevronDown className="w-4 h-4" />
-            </Button>
-          )}
+      {/* Remaining — collapsed */}
+      {rest.length > 0 && (
+        <div className="space-y-2">
+          <AnimatePresence>
+            {showMore && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-2"
+              >
+                {rest.map((idea, i) => (
+                  <CollapseRow
+                    key={idea.id || i}
+                    idea={idea}
+                    index={i}
+                    channelDNA={channelDNA}
+                    channel={channel}
+                    plan={plan}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <Button
+            variant="ghost"
+            className="w-full text-muted-foreground hover:text-white border border-border/40 hover:border-border/70 gap-2 h-11"
+            onClick={() => setShowMore(!showMore)}
+          >
+            {showMore ? (
+              <><ChevronUp className="w-4 h-4" /> Hide {rest.length} Opportunities</>
+            ) : (
+              <><ChevronDown className="w-4 h-4" /> Show {rest.length} More Opportunities</>
+            )}
+          </Button>
         </div>
       )}
     </div>
