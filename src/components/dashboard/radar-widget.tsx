@@ -22,7 +22,7 @@ const momentumConfig: Record<string, string> = {
 
 type Topic = RadarTopic;
 
-function DrilldownModal({ topic, onClose }: { topic: Topic; onClose: () => void }) {
+export function DrilldownModal({ topic, onClose }: { topic: Topic; onClose: () => void }) {
   const cfg = compConfig[topic.comp];
   return (
     <motion.div

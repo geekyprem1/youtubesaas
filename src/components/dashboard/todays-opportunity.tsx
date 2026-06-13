@@ -97,9 +97,10 @@ function getRelevantOpportunity(channelName?: string): typeof OPPORTUNITIES[0] {
 interface Props {
   lastChannelName?: string;
   interests?: string[];
+  compact?: boolean;
 }
 
-export function TodaysOpportunity({ lastChannelName, interests }: Props) {
+export function TodaysOpportunity({ lastChannelName, interests, compact }: Props) {
   let opp;
 
   // If user has interests from onboarding, use category-matched topics
@@ -124,6 +125,30 @@ export function TodaysOpportunity({ lastChannelName, interests }: Props) {
     };
   } else {
     opp = getRelevantOpportunity(lastChannelName);
+  }
+
+  if (compact) {
+    return (
+      <div
+        className="mx-4 mb-2 rounded-xl overflow-hidden relative"
+        style={{
+          background: "linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(13,17,23,0.95) 100%)",
+          border: "1px solid rgba(124,58,237,0.2)",
+        }}
+      >
+        <div className="p-3">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Zap className="w-3 h-3 text-yellow-400" />
+            <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Today&apos;s Pick</span>
+          </div>
+          <p className="text-xs font-bold text-white leading-snug mb-2">{opp.topic}</p>
+          <div className="flex items-center justify-between">
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${opp.badgeColor}`}>{opp.badge}</span>
+            <span className="text-[10px] font-bold text-blue-400">{opp.momentum}</span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
