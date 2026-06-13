@@ -3,102 +3,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flame, TrendingUp, X, Lightbulb, BarChart3, ChevronRight } from "lucide-react";
-import { getTopicsForInterests } from "@/lib/categories";
+import { getTopicsForInterests, ALL_TOPICS } from "@/lib/categories";
 import type { RadarTopic } from "@/lib/categories";
 
-// Keep export for backward compat
-export const RADAR_TOPICS = [
-  {
-    topic: "Claude Code Tutorials",
-    growth: "+340%",
-    score: 94,
-    comp: "Low" as const,
-    momentum: "Exploding",
-    forecast: "Likely to grow 14+ more days",
-    combinedViews: "12.4M",
-    videosPublished: 847,
-    whyNow: "Claude Code launched to the public — massive creator interest with very few tutorials yet. First-movers are getting millions of views.",
-    opportunities: [
-      "Claude Code for Beginners: Your First AI App in 30 Minutes",
-      "Claude Code vs Cursor vs Copilot: Which Is Actually Better?",
-      "I Built a SaaS in 24 Hours Using Claude Code (Full Walkthrough)",
-      "10 Claude Code Tricks That Save Me 5 Hours a Day",
-      "Claude Code MCP Setup Guide: Supercharge Your AI Workflow",
-    ],
-  },
-  {
-    topic: "MCP Server Setup",
-    growth: "+280%",
-    score: 91,
-    comp: "Low" as const,
-    momentum: "Exploding",
-    forecast: "Accelerating — demand outpacing content",
-    combinedViews: "8.1M",
-    videosPublished: 312,
-    whyNow: "MCP (Model Context Protocol) is becoming the standard for AI tool integration. Barely any tutorial content exists — massive gap.",
-    opportunities: [
-      "MCP Servers Explained: The Future of AI Tools",
-      "Build Your First MCP Server in 10 Minutes",
-      "Top 10 MCP Servers Every Developer Should Know",
-      "MCP vs Traditional APIs: Why It Changes Everything",
-      "Claude + MCP: Build Anything Automation Workflow",
-    ],
-  },
-  {
-    topic: "AI Agents 2025",
-    growth: "+210%",
-    score: 87,
-    comp: "Medium" as const,
-    momentum: "Rising",
-    forecast: "Growing steadily — high audience interest",
-    combinedViews: "31.2M",
-    videosPublished: 2840,
-    whyNow: "Autonomous AI agents are the #1 trend in tech. Competition is rising but audience demand is growing faster.",
-    opportunities: [
-      "AI Agents Are Taking Over: What You Need to Know in 2025",
-      "Build a Real AI Agent From Scratch (No Code Required)",
-      "5 AI Agents That Replaced My Entire Workflow",
-      "AI Agents vs ChatGPT: What's Actually Different?",
-      "The AI Agent Stack: Tools, Frameworks, and Use Cases",
-    ],
-  },
-  {
-    topic: "Vibe Coding",
-    growth: "+180%",
-    score: 83,
-    comp: "Low" as const,
-    momentum: "Rising",
-    forecast: "New category forming — early opportunity",
-    combinedViews: "5.6M",
-    videosPublished: 421,
-    whyNow: "Vibe coding is redefining how developers build. The term is new, the audience is massive, and the content gap is real.",
-    opportunities: [
-      "What Is Vibe Coding? The Future of Programming Explained",
-      "Vibe Coding My First App: Full Build Timelapse",
-      "Vibe Coding vs Traditional Coding: Which Is Better?",
-      "I Vibe Coded a $10K App in a Weekend (Here's How)",
-      "Vibe Coding Tutorial for Non-Programmers",
-    ],
-  },
-  {
-    topic: "Gemini CLI Guide",
-    growth: "+145%",
-    score: 79,
-    comp: "Low" as const,
-    momentum: "Rising",
-    forecast: "Early-stage — low competition window closing",
-    combinedViews: "3.2M",
-    videosPublished: 198,
-    whyNow: "Google launched Gemini CLI — barely any creator content. Small window to capture first-page search rankings.",
-    opportunities: [
-      "Gemini CLI: Everything You Need to Know (2025 Guide)",
-      "Gemini CLI vs Claude Code: I Tested Both for a Week",
-      "Build Anything With Gemini CLI: Full Tutorial",
-      "Gemini CLI Setup Guide: From Zero to First Project",
-      "Gemini CLI Hidden Features Most Creators Don't Know",
-    ],
-  },
-];
+export { ALL_TOPICS as RADAR_TOPICS };
 
 const compConfig: Record<string, { color: string; bg: string; border: string }> = {
   Low: { color: "text-green-400", bg: "bg-green-400/10", border: "border-green-400/20" },
@@ -219,7 +127,7 @@ export function RadarWidget({ interests }: RadarProps) {
   const [selected, setSelected] = useState<Topic | null>(null);
   const topics = interests && interests.length > 0
     ? getTopicsForInterests(interests)
-    : RADAR_TOPICS;
+    : ALL_TOPICS.slice(0, 5);
 
   return (
     <>
