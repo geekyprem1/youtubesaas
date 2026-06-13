@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, Youtube, History, CrownIcon, LogOut, Plus,
-  Film, Calendar, Eye, Menu, X, Zap, Flame, TrendingUp, ChevronRight,
+  Film, Calendar, Eye, Menu, X, Zap, Flame, TrendingUp, ChevronRight, Settings,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -124,6 +124,7 @@ const navItems = [
   { href: "/calendar", label: "Content Calendar", icon: Calendar, badge: null },
   { href: "/watchlist", label: "Watchlist", icon: Eye, badge: null },
   { href: "/dashboard/history", label: "History", icon: History, badge: null },
+  { href: "/settings", label: "Settings", icon: Settings, badge: null },
 ];
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {
