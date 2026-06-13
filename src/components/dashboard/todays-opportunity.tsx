@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Zap, ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { getTopicsForInterests } from "@/lib/categories";
 
 const OPPORTUNITIES = [
@@ -101,6 +101,16 @@ interface Props {
 }
 
 export function TodaysOpportunity({ lastChannelName, interests, compact }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  function handleExplore() {
+    if (pathname === "/dashboard") {
+      document.getElementById("analyze-section")?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      router.push("/dashboard");
+    }
+  }
   let opp;
 
   // If user has interests from onboarding, use category-matched topics
@@ -198,10 +208,10 @@ export function TodaysOpportunity({ lastChannelName, interests, compact }: Props
 
         <p className="text-xs text-white/60 leading-relaxed mb-3">{opp.why}</p>
 
-        <Link href="/dashboard" className="flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.07] hover:border-white/[0.14] transition-all group">
+        <button onClick={handleExplore} className="flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.07] hover:border-white/[0.14] transition-all group">
           <span className="text-xs font-bold text-white">Explore This Opportunity</span>
           <ArrowRight className="w-3.5 h-3.5 text-accent group-hover:translate-x-0.5 transition-transform" />
-        </Link>
+        </button>
       </div>
     </motion.div>
   );

@@ -63,11 +63,13 @@ export default function DashboardPage() {
 
         {/* Left column (2/3) */}
         <div className="lg:col-span-2 flex flex-col gap-5">
+          <div id="analyze-section">
           <ChannelInputCard
             plan={userData?.user.plan ?? "free"}
             dailyUsed={userData?.user.dailyAnalysesUsed ?? 0}
             dailyLimit={userData?.user.dailyAnalysesLimit ?? 3}
           />
+          </div>
           <AnalysisHistory analyses={userData?.analyses ?? []} loading={loading} />
           <RadarWidget interests={userData?.user?.interests} />
         </div>
