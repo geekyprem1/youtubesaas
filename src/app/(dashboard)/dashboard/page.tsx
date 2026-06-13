@@ -78,7 +78,7 @@ export default function DashboardPage() {
             limit={userData?.user.dailyAnalysesLimit ?? 3}
             loading={loading}
           />
-          <TodaysOpportunity />
+          <TodaysOpportunity lastChannelName={userData?.analyses?.find(a => a.status === "completed")?.channels?.name} />
           <WatchlistWidget />
           <VideoAnalyzerPromo />
         </div>
