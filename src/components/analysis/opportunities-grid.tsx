@@ -4,9 +4,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ProContentModal } from "@/components/analysis/pro-content-modal";
+import Link from "next/link";
 import {
   Flame, Clock, Bookmark, ChevronDown,
-  ChevronUp, ArrowRight, Lock, Zap, TrendingUp, Target
+  ChevronUp, ArrowRight, Lock, Zap, TrendingUp, Target, CrownIcon
 } from "lucide-react";
 
 interface VideoIdea {
@@ -246,8 +247,13 @@ function CollapseRow({
 
 export function OpportunitiesGrid({ ideas, channelDNA, channel, plan }: Props) {
   const [showMore, setShowMore] = useState(false);
-  const top3 = ideas.slice(0, 3);
-  const rest = ideas.slice(3);
+
+  const FREE_VISIBLE = 5; // 3 priority cards + 2 collapse rows
+  const visibleIdeas = plan === "pro" ? ideas : ideas.slice(0, FREE_VISIBLE);
+  const lockedCount = plan === "free" ? Math.max(0, ideas.length - FREE_VISIBLE) : 0;
+
+  const top3 = visibleIdeas.slice(0, 3);
+  const rest = visibleIdeas.slice(3);
 
   return (
     <div className="space-y-4">
@@ -259,7 +265,9 @@ export function OpportunitiesGrid({ ideas, channelDNA, channel, plan }: Props) {
             Top Video Opportunities
           </span>
         </div>
-        <span className="text-xs text-muted-foreground">{ideas.length} ideas found</span>
+        <span className="text-xs text-muted-foreground">
+          {plan === "free" ? `${FREE_VISIBLE} of ${ideas.length} shown` : `${ideas.length} ideas found`}
+        </span>
       </div>
 
       {/* Top 3 priority cards */}
@@ -276,42 +284,61 @@ export function OpportunitiesGrid({ ideas, channelDNA, channel, plan }: Props) {
         ))}
       </div>
 
-      {/* Remaining — collapsed */}
+      {/* Remaining visible — collapsed */}
       {rest.length > 0 && (
         <div className="space-y-2">
           <AnimatePresence>
             {showMore && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-2"
-              >
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
                 {rest.map((idea, i) => (
-                  <CollapseRow
-                    key={idea.id || i}
-                    idea={idea}
-                    index={i}
-                    channelDNA={channelDNA}
-                    channel={channel}
-                    plan={plan}
-                  />
+                  <CollapseRow key={idea.id || i} idea={idea} index={i} channelDNA={channelDNA} channel={channel} plan={plan} />
                 ))}
               </motion.div>
             )}
           </AnimatePresence>
-
           <Button
             variant="ghost"
             className="w-full text-muted-foreground hover:text-white border border-border/40 hover:border-border/70 gap-2 h-11"
             onClick={() => setShowMore(!showMore)}
           >
             {showMore ? (
-              <><ChevronUp className="w-4 h-4" /> Hide {rest.length} Opportunities</>
+              <><ChevronUp className="w-4 h-4" /> Hide</>
             ) : (
-              <><ChevronDown className="w-4 h-4" /> Show {rest.length} More Opportunities</>
+              <><ChevronDown className="w-4 h-4" /> Show {rest.length} More</>
             )}
           </Button>
+        </div>
+      )}
+
+      {/* Pro locked gate */}
+      {lockedCount > 0 && (
+        <div className="relative rounded-2xl overflow-hidden border border-primary/20">
+          {/* Blurred preview rows */}
+          <div className="space-y-2 p-3 blur-sm pointer-events-none select-none opacity-60">
+            {ideas.slice(FREE_VISIBLE, FREE_VISIBLE + 3).map((idea, i) => (
+              <div key={i} className="border border-border/40 rounded-xl px-5 py-4 flex items-center gap-4">
+                <span className="text-xs text-muted-foreground w-6">#{FREE_VISIBLE + i + 1}</span>
+                <span className="flex-1 text-sm font-medium text-white line-clamp-1">{idea.title}</span>
+                <span className="text-sm font-black text-green-400">{idea.opportunityScore}</span>
+              </div>
+            ))}
+          </div>
+          {/* Overlay */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-background/95 via-background/80 to-transparent px-6 py-8">
+            <div className="w-10 h-10 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center mb-3">
+              <Lock className="w-5 h-5 text-accent" />
+            </div>
+            <p className="text-white font-black text-lg mb-1">{lockedCount} More Ideas Locked</p>
+            <p className="text-muted-foreground text-sm text-center mb-5 max-w-xs">
+              Pro users see all {ideas.length} opportunities — including hidden high-potential ideas your competitors haven&apos;t found yet.
+            </p>
+            <Button variant="gradient" className="gap-2 glow-purple" asChild>
+              <Link href="/pricing">
+                <CrownIcon className="w-4 h-4" />
+                Unlock All {ideas.length} Ideas — Go Pro
+              </Link>
+            </Button>
+          </div>
         </div>
       )}
     </div>

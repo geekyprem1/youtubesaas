@@ -1,7 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ExternalLink, TrendingUp, AlertTriangle, Flame } from "lucide-react";
+import { ExternalLink, TrendingUp, AlertTriangle, Flame, Lock, CrownIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { formatNumber, timeAgo } from "@/lib/utils";
 
 interface CompetitorVideo {
@@ -29,6 +31,7 @@ interface VideoIdea {
 interface Props {
   competitors: Competitor[];
   userIdeas: VideoIdea[];
+  plan?: "free" | "pro";
 }
 
 type Impact = "Very High" | "High" | "Medium";
@@ -50,8 +53,10 @@ const impactConfig: Record<Impact, { color: string; bg: string; border: string }
   "Medium":    { color: "text-yellow-400", bg: "bg-yellow-400/10", border: "border-yellow-400/20" },
 };
 
-export function CompetitorOpportunities({ competitors, userIdeas }: Props) {
-  const opportunities: Opportunity[] = competitors
+export function CompetitorOpportunities({ competitors, userIdeas, plan = "free" }: Props) {
+  const FREE_LIMIT = 3;
+
+  const allOpportunities: Opportunity[] = competitors
     .flatMap((c) =>
       (c.top_videos ?? []).slice(0, 2).map((v) => ({
         competitorName: c.channel_name,
@@ -68,9 +73,12 @@ export function CompetitorOpportunities({ competitors, userIdeas }: Props) {
     .sort((a, b) => b.video.viewCount - a.video.viewCount)
     .slice(0, 8);
 
-  if (opportunities.length === 0) return null;
+  const opportunities = plan === "pro" ? allOpportunities : allOpportunities.slice(0, FREE_LIMIT);
+  const lockedCount = plan === "free" ? Math.max(0, allOpportunities.length - FREE_LIMIT) : 0;
 
-  const totalMissedViews = opportunities.reduce((s, o) => s + o.video.viewCount, 0);
+  if (allOpportunities.length === 0) return null;
+
+  const totalMissedViews = allOpportunities.reduce((s, o) => s + o.video.viewCount, 0);
 
   return (
     <div className="space-y-4">
@@ -92,6 +100,7 @@ export function CompetitorOpportunities({ competitors, userIdeas }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {opportunities.map((opp, i) => {
+
           const cfg = impactConfig[opp.impact];
           return (
             <motion.div
@@ -178,6 +187,35 @@ export function CompetitorOpportunities({ competitors, userIdeas }: Props) {
           );
         })}
       </div>
+
+      {/* Pro locked gate */}
+      {lockedCount > 0 && (
+        <div className="relative rounded-2xl border border-primary/20 overflow-hidden mt-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 blur-sm pointer-events-none select-none opacity-50">
+            {allOpportunities.slice(FREE_LIMIT, FREE_LIMIT + 2).map((opp, i) => (
+              <div key={i} className="glass rounded-xl p-5">
+                <p className="text-sm font-bold text-white mb-2">{opp.competitorName}</p>
+                <p className="text-sm text-white/60 line-clamp-2">{opp.video.title}</p>
+              </div>
+            ))}
+          </div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-background/95 via-background/75 to-transparent px-6 py-8">
+            <div className="w-10 h-10 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center mb-3">
+              <Lock className="w-5 h-5 text-accent" />
+            </div>
+            <p className="text-white font-black text-lg mb-1">{lockedCount} Competitor Gaps Hidden</p>
+            <p className="text-muted-foreground text-sm text-center mb-5 max-w-xs">
+              Pro users see all {allOpportunities.length} competitor opportunities — including the highest-earning gaps in your niche.
+            </p>
+            <Button variant="gradient" className="gap-2 glow-purple" asChild>
+              <Link href="/pricing">
+                <CrownIcon className="w-4 h-4" />
+                Unlock Full Competitor Intelligence
+              </Link>
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

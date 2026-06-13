@@ -38,7 +38,7 @@ export default function AnalysisPage() {
   const params = useParams<{ id: string }>();
   const [data, setData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [plan] = useState<"free" | "pro">("free");
+  const [plan, setPlan] = useState<"free" | "pro">("free");
 
   const fetchAnalysis = useCallback(async () => {
     const res = await fetch(`/api/analysis/${params.id}`);
@@ -51,6 +51,7 @@ export default function AnalysisPage() {
 
   useEffect(() => {
     fetchAnalysis();
+    fetch("/api/user").then(r => r.json()).then(d => setPlan(d.user?.plan ?? "free"));
   }, [fetchAnalysis]);
 
   useEffect(() => {
@@ -182,7 +183,7 @@ export default function AnalysisPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
           >
-            <StrategyPicker ideas={ideas} />
+            <StrategyPicker ideas={ideas} plan={plan} />
           </motion.div>
         )}
 
@@ -209,7 +210,7 @@ export default function AnalysisPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <CompetitorOpportunities competitors={competitors} userIdeas={ideas} />
+            <CompetitorOpportunities competitors={competitors} userIdeas={ideas} plan={plan} />
           </motion.div>
         )}
 

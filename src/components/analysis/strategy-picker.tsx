@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Shield, TrendingUp, Flame, ArrowRight } from "lucide-react";
+import { Shield, TrendingUp, Flame, ArrowRight, Lock, CrownIcon } from "lucide-react";
+import Link from "next/link";
 
 interface VideoIdea {
   id: string;
@@ -13,9 +14,10 @@ interface VideoIdea {
 
 interface Props {
   ideas: VideoIdea[];
+  plan?: "free" | "pro";
 }
 
-export function StrategyPicker({ ideas }: Props) {
+export function StrategyPicker({ ideas, plan = "free" }: Props) {
   if (ideas.length < 3) return null;
 
   // Sort by score, pick 3 distinct ideas — no duplicates
@@ -91,13 +93,14 @@ export function StrategyPicker({ ideas }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {strategies.map((s, i) => {
           const Icon = s.icon;
+          const isLocked = plan === "free" && i > 0;
           return (
             <motion.div
               key={s.label}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className={`relative rounded-xl border p-4 cursor-pointer group transition-all hover:scale-[1.02] ${s.color}`}
+              className={`relative rounded-xl border p-4 overflow-hidden transition-all ${s.color} ${!isLocked ? "cursor-pointer hover:scale-[1.02]" : ""}`}
             >
               <div className="flex items-center justify-between mb-3">
                 <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border ${s.badge}`}>
@@ -107,11 +110,11 @@ export function StrategyPicker({ ideas }: Props) {
                 <Icon className={`w-4 h-4 ${s.accent}`} />
               </div>
 
-              <p className="text-sm font-black text-white leading-snug mb-1.5 line-clamp-2">
+              <p className={`text-sm font-black text-white leading-snug mb-1.5 line-clamp-2 ${isLocked ? "blur-sm select-none" : ""}`}>
                 {s.idea?.title ?? "—"}
               </p>
 
-              <p className={`text-xs font-bold mb-2 ${s.accent}`}>
+              <p className={`text-xs font-bold mb-2 ${s.accent} ${isLocked ? "blur-sm select-none" : ""}`}>
                 Expected: {s.viewRange}
               </p>
 
@@ -119,10 +122,18 @@ export function StrategyPicker({ ideas }: Props) {
                 {s.desc}
               </p>
 
-              <div className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-white transition-colors">
-                <span>Select this strategy</span>
-                <ArrowRight className="w-3 h-3" />
-              </div>
+              {!isLocked ? (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-white transition-colors">
+                  <span>Select this strategy</span>
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+              ) : (
+                <Link href="/pricing" className="flex items-center gap-1.5 text-xs font-bold text-accent hover:text-white transition-colors">
+                  <Lock className="w-3 h-3" />
+                  <CrownIcon className="w-3 h-3" />
+                  Unlock with Pro
+                </Link>
+              )}
             </motion.div>
           );
         })}
