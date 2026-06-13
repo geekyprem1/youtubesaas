@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ProContentModal } from "@/components/analysis/pro-content-modal";
+import type { ProContentType } from "@/lib/gemini";
 import {
   CheckCircle2, ArrowRight, Lock,
   Calendar, TrendingUp, Zap, FileText, Eye,
@@ -144,10 +145,10 @@ function ActionButton({
 
 export function HeroVideoIdea({ idea, channelDNA, channel, plan, competitors }: Props) {
   const [showPro, setShowPro] = useState(false);
-  const [proTab, setProTab] = useState("titles");
+  const [contentType, setContentType] = useState<ProContentType>("all");
   const isPro = plan === "pro";
 
-  function open(tab: string) { setProTab(tab); setShowPro(true); }
+  function open(type: ProContentType) { setContentType(type); setShowPro(true); }
 
   /* Build competitor proof */
   const proofItems = competitors
@@ -350,10 +351,10 @@ export function HeroVideoIdea({ idea, channelDNA, channel, plan, competitors }: 
                   locked={!isPro}
                 />
                 <ActionButton
-                  label="Create Full Video Plan"
-                  sub="Outline + SEO description + tags"
+                  label="SEO Description & Tags"
+                  sub="Rank higher in search"
                   icon={FileText}
-                  onClick={() => open("outline")}
+                  onClick={() => open("seo")}
                   locked={!isPro}
                 />
 
@@ -363,7 +364,7 @@ export function HeroVideoIdea({ idea, channelDNA, channel, plan, competitors }: 
                     <Button
                       variant="gradient"
                       className="w-full h-11 font-bold text-sm gap-2 glow-purple"
-                      onClick={() => open("titles")}
+                      onClick={() => open("all")}
                     >
                       <Sparkles className="w-4 h-4" />
                       Generate Full Pack
@@ -425,7 +426,7 @@ export function HeroVideoIdea({ idea, channelDNA, channel, plan, competitors }: 
           channel={channel}
           plan={plan}
           onClose={() => setShowPro(false)}
-          defaultTab={proTab}
+          contentType={contentType}
         />
       )}
     </>

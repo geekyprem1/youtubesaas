@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { generateProContent } from "@/lib/gemini";
+import { generateProContent, type ProContentType } from "@/lib/gemini";
 import type { VideoIdea, ChannelDNA, YoutubeChannel } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -22,10 +22,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { videoIdea, channelDNA, channel: rawChannel } = await req.json() as {
+    const { videoIdea, channelDNA, channel: rawChannel, contentType } = await req.json() as {
       videoIdea: VideoIdea;
       channelDNA: ChannelDNA;
       channel: YoutubeChannel | null;
+      contentType?: ProContentType;
     };
 
     // Ensure channel is never null — gemini prompt requires channel.name
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
       country: "", publishedAt: "",
     };
 
-    const proContent = await generateProContent(videoIdea, channelDNA, channel);
+    const proContent = await generateProContent(videoIdea, channelDNA, channel, contentType ?? "all");
     return NextResponse.json(proContent);
   } catch (error) {
     return NextResponse.json(

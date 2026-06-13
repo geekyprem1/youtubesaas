@@ -146,57 +146,44 @@ Return a JSON array:
   return generateJSON<VideoIdea[]>(prompt);
 }
 
+export type ProContentType = "titles" | "thumbnails" | "outline" | "seo" | "all";
+
 export async function generateProContent(
   videoIdea: VideoIdea,
   channelDNA: ChannelDNA,
-  channel: YoutubeChannel
-): Promise<ProContent> {
-  const prompt = `
-You are an expert YouTube content strategist. Generate complete production assets for this video idea.
-
-Channel: ${channel.name}
-Channel Niche: ${channelDNA.primaryNiche}
-Audience: ${channelDNA.audienceType}
-Content Style: ${channelDNA.contentStyle}
-
+  channel: YoutubeChannel,
+  contentType: ProContentType = "all"
+): Promise<Partial<ProContent>> {
+  const ctx = `Channel: ${channel.name}
+Channel Niche: ${channelDNA?.primaryNiche ?? "General"}
+Audience: ${channelDNA?.audienceType ?? "General audience"}
+Content Style: ${channelDNA?.contentStyle ?? "Educational"}
 Video Idea: "${videoIdea.title}"
 Opportunity Score: ${videoIdea.opportunityScore}/100
-Topics: ${videoIdea.topics.join(", ")}
+Topics: ${(videoIdea.topics ?? []).join(", ")}`;
 
-Return this exact JSON:
-{
-  "titles": ["10 unique, highly clickable title variations with different hooks"],
-  "thumbnailConcepts": [
-    {
-      "concept": "Concept name",
-      "description": "Detailed visual description",
-      "colorScheme": "e.g., Dark background with bright yellow text",
-      "textOverlay": "Main text on thumbnail"
-    },
-    {
-      "concept": "Concept name 2",
-      "description": "Detailed visual description",
-      "colorScheme": "Color description",
-      "textOverlay": "Main text on thumbnail"
-    },
-    {
-      "concept": "Concept name 3",
-      "description": "Detailed visual description",
-      "colorScheme": "Color description",
-      "textOverlay": "Main text on thumbnail"
-    }
-  ],
-  "seoDescription": "Full SEO-optimized YouTube description (400-500 words)",
-  "tags": ["20-25 relevant YouTube tags"],
-  "videoOutline": [
-    { "timestamp": "0:00", "section": "Hook", "description": "What to cover" },
-    { "timestamp": "0:30", "section": "Intro", "description": "What to cover" }
-  ],
-  "hookScript": "A compelling 30-60 second hook script",
-  "ctaSuggestions": ["5 different call-to-action suggestions"]
-}
-`;
+  if (contentType === "titles") {
+    const prompt = `You are a YouTube title expert. Generate 10 unique highly clickable title variations.\n\n${ctx}\n\nReturn JSON: { "titles": ["title1", "title2", ...10 titles] }`;
+    return generateJSON<Pick<ProContent, "titles">>(prompt);
+  }
 
+  if (contentType === "thumbnails") {
+    const prompt = `You are a YouTube thumbnail expert. Generate 3 visual thumbnail concepts.\n\n${ctx}\n\nReturn JSON: { "thumbnailConcepts": [{ "concept": "", "description": "", "colorScheme": "", "textOverlay": "" }, ...3 items] }`;
+    return generateJSON<Pick<ProContent, "thumbnailConcepts">>(prompt);
+  }
+
+  if (contentType === "outline") {
+    const prompt = `You are a YouTube content strategist. Generate a hook script and video outline.\n\n${ctx}\n\nReturn JSON: { "hookScript": "30-60 second hook script", "videoOutline": [{ "timestamp": "0:00", "section": "Hook", "description": "" }, ...], "ctaSuggestions": ["cta1", ...5 items] }`;
+    return generateJSON<Pick<ProContent, "hookScript" | "videoOutline" | "ctaSuggestions">>(prompt);
+  }
+
+  if (contentType === "seo") {
+    const prompt = `You are a YouTube SEO expert. Generate SEO description and tags.\n\n${ctx}\n\nReturn JSON: { "seoDescription": "400-500 word SEO description", "tags": ["tag1", ...20-25 tags] }`;
+    return generateJSON<Pick<ProContent, "seoDescription" | "tags">>(prompt);
+  }
+
+  // "all" — full pack
+  const prompt = `You are an expert YouTube content strategist. Generate complete production assets for this video idea.\n\n${ctx}\n\nReturn this exact JSON:\n{\n  "titles": ["10 unique, highly clickable title variations with different hooks"],\n  "thumbnailConcepts": [\n    { "concept": "name", "description": "visual description", "colorScheme": "colors", "textOverlay": "text" },\n    { "concept": "name 2", "description": "visual description", "colorScheme": "colors", "textOverlay": "text" },\n    { "concept": "name 3", "description": "visual description", "colorScheme": "colors", "textOverlay": "text" }\n  ],\n  "seoDescription": "Full SEO-optimized YouTube description (400-500 words)",\n  "tags": ["20-25 relevant YouTube tags"],\n  "videoOutline": [\n    { "timestamp": "0:00", "section": "Hook", "description": "What to cover" },\n    { "timestamp": "0:30", "section": "Intro", "description": "What to cover" }\n  ],\n  "hookScript": "A compelling 30-60 second hook script",\n  "ctaSuggestions": ["5 different call-to-action suggestions"]\n}`;
   return generateJSON<ProContent>(prompt);
 }
 
