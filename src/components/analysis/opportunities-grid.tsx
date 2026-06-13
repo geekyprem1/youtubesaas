@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ProContentModal } from "@/components/analysis/pro-content-modal";
+import type { ProContentType } from "@/lib/gemini";
 import Link from "next/link";
 import {
   Flame, Clock, Bookmark, ChevronDown,
@@ -29,7 +30,11 @@ interface Props {
   plan: "free" | "pro";
 }
 
-const PRIORITY_CONFIG = [
+const PRIORITY_CONFIG: Array<{
+  rank: number; label: string; emoji: string; icon: React.ElementType;
+  accent: string; badge: string; cta: string; videoBadge: string;
+  videoBadgeStyle: string; contentType: ProContentType;
+}> = [
   {
     rank: 1,
     label: "Make This Now",
@@ -40,6 +45,7 @@ const PRIORITY_CONFIG = [
     cta: "Start This Video",
     videoBadge: "🔥 Make This Now",
     videoBadgeStyle: "text-orange-300 bg-orange-500/15 border-orange-500/25",
+    contentType: "outline",   // hook + script to start filming
   },
   {
     rank: 2,
@@ -51,6 +57,7 @@ const PRIORITY_CONFIG = [
     cta: "Plan This Video",
     videoBadge: "⚡ Rising Fast",
     videoBadgeStyle: "text-blue-300 bg-blue-500/10 border-blue-500/20",
+    contentType: "all",       // full planning pack
   },
   {
     rank: 3,
@@ -62,6 +69,7 @@ const PRIORITY_CONFIG = [
     cta: "Queue This Video",
     videoBadge: "📈 High Potential",
     videoBadgeStyle: "text-blue-300 bg-blue-500/10 border-blue-500/20",
+    contentType: "titles",    // title ideas to save for later
   },
 ];
 
@@ -177,6 +185,7 @@ function PriorityCard({
           channelDNA={channelDNA}
           channel={channel}
           plan={plan}
+          contentType={config.contentType}
           onClose={() => setShowPro(false)}
         />
       )}
