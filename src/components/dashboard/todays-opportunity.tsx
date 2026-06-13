@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Zap, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { getTopicsForInterests } from "@/lib/categories";
 
 const OPPORTUNITIES = [
   {
@@ -95,10 +96,35 @@ function getRelevantOpportunity(channelName?: string): typeof OPPORTUNITIES[0] {
 
 interface Props {
   lastChannelName?: string;
+  interests?: string[];
 }
 
-export function TodaysOpportunity({ lastChannelName }: Props) {
-  const opp = getRelevantOpportunity(lastChannelName);
+export function TodaysOpportunity({ lastChannelName, interests }: Props) {
+  let opp;
+
+  // If user has interests from onboarding, use category-matched topics
+  if (interests && interests.length > 0) {
+    const categoryTopics = getTopicsForInterests(interests);
+    const d = new Date();
+    const dayOfYear = Math.floor((d.getTime() - new Date(d.getFullYear(), 0, 0).getTime()) / 86400000);
+    const t = categoryTopics[dayOfYear % categoryTopics.length];
+    // Map RadarTopic to OPPORTUNITIES shape
+    opp = {
+      topic: t.topic,
+      momentum: t.growth,
+      competition: t.comp,
+      potential: t.combinedViews + "+ views",
+      why: t.whyNow,
+      badge: t.momentum === "Exploding" ? "🔥 Exploding" : t.momentum === "Rising" ? "⚡ Rising Fast" : "📈 Growing",
+      badgeColor: t.momentum === "Exploding"
+        ? "text-orange-400 bg-orange-400/10 border-orange-400/20"
+        : t.momentum === "Rising"
+        ? "text-blue-400 bg-blue-400/10 border-blue-400/20"
+        : "text-green-400 bg-green-400/10 border-green-400/20",
+    };
+  } else {
+    opp = getRelevantOpportunity(lastChannelName);
+  }
 
   return (
     <motion.div

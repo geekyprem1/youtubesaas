@@ -18,6 +18,8 @@ interface UserData {
     fullName?: string;
     avatarUrl?: string;
     plan: "free" | "pro";
+    interests?: string[];
+    onboardingChannelUrl?: string;
     dailyAnalysesUsed: number;
     dailyAnalysesLimit: number;
   };
@@ -67,7 +69,7 @@ export default function DashboardPage() {
             dailyLimit={userData?.user.dailyAnalysesLimit ?? 3}
           />
           <AnalysisHistory analyses={userData?.analyses ?? []} loading={loading} />
-          <RadarWidget />
+          <RadarWidget interests={userData?.user?.interests} />
         </div>
 
         {/* Right column (1/3) */}
@@ -78,7 +80,10 @@ export default function DashboardPage() {
             limit={userData?.user.dailyAnalysesLimit ?? 3}
             loading={loading}
           />
-          <TodaysOpportunity lastChannelName={userData?.analyses?.find(a => a.status === "completed")?.channels?.name} />
+          <TodaysOpportunity
+            lastChannelName={userData?.analyses?.find(a => a.status === "completed")?.channels?.name}
+            interests={userData?.user?.interests}
+          />
           <WatchlistWidget />
           <VideoAnalyzerPromo />
         </div>

@@ -46,6 +46,26 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Redirect new users (not yet onboarded) to /onboarding
+  if (user && pathname === "/dashboard") {
+    const onboarded = request.cookies.get("uploadiq_onboarded")?.value;
+    if (!onboarded) {
+      // Check DB — only on first dashboard visit
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarded")
+        .eq("id", user.id)
+        .single();
+      if (profile && !profile.onboarded) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/onboarding";
+        return NextResponse.redirect(url);
+      }
+      // Set cookie so we don't query DB on every visit
+      supabaseResponse.cookies.set("uploadiq_onboarded", "1", { maxAge: 60 * 60 * 24 * 365 });
+    }
+  }
+
   // Admin route — only ADMIN_EMAIL can access
   if (pathname.startsWith("/admin")) {
     if (!user) {

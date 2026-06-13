@@ -9,7 +9,7 @@ export async function GET() {
   const today = new Date().toISOString().split("T")[0];
 
   const [profileRes, usageRes, analysesRes] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", user.id).single(),
+    supabase.from("profiles").select("id, plan, full_name, avatar_url, created_at, interests, onboarding_channel_url").eq("id", user.id).single(),
     supabase.from("daily_usage").select("count").eq("user_id", user.id).eq("date", today).single(),
     supabase.from("analyses")
       .select("id, status, created_at, channel_id, channel_url")
@@ -46,6 +46,8 @@ export async function GET() {
       fullName: profileRes.data?.full_name ?? user.user_metadata?.full_name,
       avatarUrl: profileRes.data?.avatar_url ?? user.user_metadata?.avatar_url,
       plan,
+      interests: profileRes.data?.interests ?? [],
+      onboardingChannelUrl: profileRes.data?.onboarding_channel_url ?? null,
       dailyAnalysesUsed: dailyUsed,
       dailyAnalysesLimit: dailyLimit,
     },

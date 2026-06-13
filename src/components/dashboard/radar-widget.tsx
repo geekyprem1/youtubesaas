@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, TrendingUp, X, Lightbulb, Users, BarChart3, ChevronRight } from "lucide-react";
+import { Flame, TrendingUp, X, Lightbulb, BarChart3, ChevronRight } from "lucide-react";
+import { getTopicsForInterests } from "@/lib/categories";
+import type { RadarTopic } from "@/lib/categories";
 
+// Keep export for backward compat
 export const RADAR_TOPICS = [
   {
     topic: "Claude Code Tutorials",
@@ -109,12 +112,7 @@ const momentumConfig: Record<string, string> = {
   "Stable": "text-muted-foreground",
 };
 
-interface Topic {
-  topic: string; growth: string; score: number;
-  comp: "Low" | "Medium" | "High"; momentum: string; forecast: string;
-  combinedViews: string; videosPublished: number; whyNow: string;
-  opportunities: string[];
-}
+type Topic = RadarTopic;
 
 function DrilldownModal({ topic, onClose }: { topic: Topic; onClose: () => void }) {
   const cfg = compConfig[topic.comp];
@@ -213,8 +211,15 @@ function DrilldownModal({ topic, onClose }: { topic: Topic; onClose: () => void 
   );
 }
 
-export function RadarWidget() {
+interface RadarProps {
+  interests?: string[];
+}
+
+export function RadarWidget({ interests }: RadarProps) {
   const [selected, setSelected] = useState<Topic | null>(null);
+  const topics = interests && interests.length > 0
+    ? getTopicsForInterests(interests)
+    : RADAR_TOPICS;
 
   return (
     <>
@@ -235,7 +240,7 @@ export function RadarWidget() {
         </div>
 
         <div className="divide-y divide-white/[0.04]">
-          {RADAR_TOPICS.map((t, i) => {
+          {topics.map((t, i) => {
             const cfg = compConfig[t.comp];
             return (
               <motion.button
