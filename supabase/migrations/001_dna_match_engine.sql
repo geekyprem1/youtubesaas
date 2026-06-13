@@ -28,11 +28,7 @@ create table if not exists public.competitor_videos (
   like_count bigint default 0,
   comment_count bigint default 0,
   published_at timestamptz,
-  views_per_day numeric generated always as (
-    case when published_at is null then 0
-    else view_count / greatest(1, extract(epoch from (now() - published_at)) / 86400)
-    end
-  ) stored,
+  views_per_day numeric default 0, -- populated by the app (now() is not immutable, so not a generated column)
   fetched_at timestamptz default now()
 );
 
