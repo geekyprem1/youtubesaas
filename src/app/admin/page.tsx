@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
   Users, CrownIcon, BarChart3, RefreshCw,
   ShieldBan, ShieldCheck, TrendingUp, TrendingDown,
-  Search, ChevronDown, ChevronUp, Zap
+  Search, ChevronDown, ChevronUp, Zap, Lock, Eye, EyeOff
 } from "lucide-react";
 
 interface User {
@@ -45,7 +45,84 @@ function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType
   );
 }
 
+function PasswordGate({ onSuccess }: { onSuccess: () => void }) {
+  const [password, setPassword] = useState("");
+  const [show, setShow] = useState(false);
+  const [error, setError] = useState(false);
+  const [checking, setChecking] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setChecking(true);
+    setError(false);
+    const res = await fetch("/api/admin/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    if (res.ok) {
+      onSuccess();
+    } else {
+      setError(true);
+    }
+    setChecking(false);
+  }
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-sm"
+      >
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-600 to-blue-500 flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-6 h-6 text-white" />
+          </div>
+          <h1 className="text-xl font-black text-white">Admin Access</h1>
+          <p className="text-sm text-muted-foreground mt-1">Enter admin password to continue</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type={show ? "text" : "password"}
+              value={password}
+              onChange={e => { setPassword(e.target.value); setError(false); }}
+              placeholder="Admin password"
+              className={`w-full px-4 py-3 pr-10 rounded-xl bg-white/[0.04] border text-white placeholder:text-muted-foreground focus:outline-none transition-colors ${
+                error ? "border-red-500/50 focus:border-red-500" : "border-white/[0.07] focus:border-primary/40"
+              }`}
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={() => setShow(!show)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white transition-colors"
+            >
+              {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+
+          {error && (
+            <p className="text-xs text-red-400 text-center">Wrong password. Try again.</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={!password || checking}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-blue-500 text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40"
+          >
+            {checking ? "Verifying..." : "Enter Admin Panel"}
+          </button>
+        </form>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function AdminPage() {
+  const [unlocked, setUnlocked] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -62,7 +139,9 @@ export default function AdminPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+  useEffect(() => { if (unlocked) fetchUsers(); }, [fetchUsers, unlocked]);
+
+  if (!unlocked) return <PasswordGate onSuccess={() => setUnlocked(true)} />;
 
   async function doAction(userId: string, action: string) {
     setActionLoading(userId + action);
