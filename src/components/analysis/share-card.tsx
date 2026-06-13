@@ -44,17 +44,17 @@ function SharePreviewCard({
 
       {/* Metrics */}
       <div className="grid grid-cols-3 gap-3 mb-5">
-        <div className="rounded-xl p-3 text-center" style={{ background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.2)" }}>
-          <p className="text-2xl font-black text-white">{score}</p>
-          <p className="text-[10px] text-violet-300 mt-0.5 font-semibold uppercase tracking-wide">Opp. Score</p>
+        <div className="rounded-xl p-3 text-center" style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)" }}>
+          <p className="text-2xl font-black text-green-400">{score}</p>
+          <p className="text-[10px] text-green-300 mt-0.5 font-semibold uppercase tracking-wide">Opp. Score</p>
         </div>
         <div className="rounded-xl p-3 text-center" style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)" }}>
           <p className="text-2xl font-black text-white">{confidence}%</p>
           <p className="text-[10px] text-green-400 mt-0.5 font-semibold uppercase tracking-wide">Confidence</p>
         </div>
-        <div className="rounded-xl p-3 text-center" style={{ background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.2)" }}>
+        <div className="rounded-xl p-3 text-center" style={{ background: "rgba(251,146,60,0.1)", border: "1px solid rgba(251,146,60,0.2)" }}>
           <p className="text-sm font-black text-white leading-tight">{estimatedViews}</p>
-          <p className="text-[10px] text-accent mt-0.5 font-semibold uppercase tracking-wide">Est. Views</p>
+          <p className="text-[10px] text-orange-400 mt-0.5 font-semibold uppercase tracking-wide">Est. Views</p>
         </div>
       </div>
 

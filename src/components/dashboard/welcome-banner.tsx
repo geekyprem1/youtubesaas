@@ -24,12 +24,12 @@ export function WelcomeBanner({ user, loading, analysesCount = 0 }: Props) {
     <div
       className="relative rounded-2xl overflow-hidden px-7 py-6"
       style={{
-        background: "linear-gradient(135deg, rgba(124,58,237,0.14) 0%, rgba(11,15,25,0.98) 65%)",
-        border: "1px solid rgba(124,58,237,0.18)",
-        boxShadow: "0 0 60px rgba(124,58,237,0.06)",
+        background: "rgba(17,24,39,0.9)",
+        border: "1px solid rgba(255,255,255,0.07)",
+        boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
       }}
     >
-      <div className="absolute -top-12 -right-12 w-64 h-64 bg-primary/6 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-12 -right-12 w-64 h-64 bg-white/[0.01] rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -64,7 +64,7 @@ export function WelcomeBanner({ user, loading, analysesCount = 0 }: Props) {
             ) : (
               <Link
                 href="/pricing"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-primary/25 bg-primary/10 text-xs font-bold text-accent hover:bg-primary/20 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-primary/30 bg-primary/15 text-xs font-bold text-white hover:bg-primary/25 transition-colors glow-purple"
               >
                 Upgrade to Pro
                 <ChevronRight className="w-3 h-3" />

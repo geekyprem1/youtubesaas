@@ -132,8 +132,9 @@ export function TodaysOpportunity({ lastChannelName, interests, compact }: Props
       <div
         className="mx-4 mb-2 rounded-xl overflow-hidden relative"
         style={{
-          background: "linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(13,17,23,0.95) 100%)",
-          border: "1px solid rgba(124,58,237,0.2)",
+          background: "rgba(17,24,39,0.9)",
+          border: "1px solid rgba(255,255,255,0.07)",
+          borderLeft: "2px solid rgba(251,146,60,0.5)",
         }}
       >
         <div className="p-3">
@@ -157,13 +158,12 @@ export function TodaysOpportunity({ lastChannelName, interests, compact }: Props
       animate={{ opacity: 1, y: 0 }}
       className="rounded-2xl overflow-hidden relative"
       style={{
-        background: "linear-gradient(135deg, rgba(124,58,237,0.18) 0%, rgba(59,130,246,0.10) 50%, rgba(13,17,23,0.95) 100%)",
-        border: "1px solid rgba(124,58,237,0.25)",
-        boxShadow: "0 0 40px rgba(124,58,237,0.08)",
+        background: "rgba(17,24,39,0.95)",
+        border: "1px solid rgba(255,255,255,0.07)",
+        borderLeft: "3px solid rgba(251,146,60,0.6)",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
       }}
     >
-      <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-20 pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(124,58,237,0.4) 0%, transparent 70%)", transform: "translate(30%, -30%)" }} />
 
       <div className="relative p-5">
         <div className="flex items-start justify-between mb-3">
@@ -198,7 +198,7 @@ export function TodaysOpportunity({ lastChannelName, interests, compact }: Props
 
         <p className="text-xs text-white/60 leading-relaxed mb-3">{opp.why}</p>
 
-        <Link href="/dashboard" className="flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl bg-primary/15 border border-primary/25 hover:bg-primary/25 hover:border-primary/40 transition-all group">
+        <Link href="/dashboard" className="flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.07] hover:border-white/[0.14] transition-all group">
           <span className="text-xs font-bold text-white">Explore This Opportunity</span>
           <ArrowRight className="w-3.5 h-3.5 text-accent group-hover:translate-x-0.5 transition-transform" />
         </Link>

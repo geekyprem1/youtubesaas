@@ -50,18 +50,25 @@
     border: 1px solid rgba(255, 255, 255, 0.06);
   }
 
-  .glass-purple {
-    background: rgba(124, 58, 237, 0.1);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(124, 58, 237, 0.2);
-  }
-
   .gradient-text {
     background: linear-gradient(135deg, #7C3AED 0%, #A855F7 50%, #EC4899 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  .surface-card {
+    background: rgba(17, 24, 39, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 
   .glow-purple {

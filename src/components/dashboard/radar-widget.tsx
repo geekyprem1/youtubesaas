@@ -40,9 +40,9 @@ export function DrilldownModal({ topic, onClose }: { topic: Topic; onClose: () =
         onClick={e => e.stopPropagation()}
         className="w-full max-w-lg rounded-2xl overflow-hidden"
         style={{
-          background: "linear-gradient(150deg, rgba(124,58,237,0.12) 0%, #0d1117 60%)",
-          border: "1px solid rgba(124,58,237,0.25)",
-          boxShadow: "0 40px 80px rgba(0,0,0,0.6), 0 0 60px rgba(124,58,237,0.1)",
+          background: "rgba(13,17,23,0.98)",
+          border: "1px solid rgba(255,255,255,0.09)",
+          boxShadow: "0 40px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05)",
         }}
       >
         {/* Header */}
@@ -62,7 +62,7 @@ export function DrilldownModal({ topic, onClose }: { topic: Topic; onClose: () =
         {/* Metrics row */}
         <div className="grid grid-cols-4 gap-2 px-6 pb-4">
           {[
-            { label: "Trend Score", value: String(topic.score), color: "text-white" },
+            { label: "Trend Score", value: String(topic.score), color: "text-green-400" },
             { label: "Growth", value: topic.growth, color: "text-blue-400" },
             { label: "Views Combined", value: topic.combinedViews, color: "text-green-400" },
             { label: "Videos Published", value: String(topic.videosPublished), color: "text-accent" },
@@ -105,7 +105,7 @@ export function DrilldownModal({ topic, onClose }: { topic: Topic; onClose: () =
                 initial={{ opacity: 0, x: -6 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.06 }}
-                className="flex items-center gap-3 p-3 rounded-xl border border-primary/15 bg-primary/5 group cursor-pointer hover:border-primary/30 hover:bg-primary/10 transition-all"
+                className="flex items-center gap-3 p-3 rounded-xl border border-white/[0.06] bg-white/[0.02] group cursor-pointer hover:border-green-400/20 hover:bg-green-400/5 transition-all"
               >
                 <span className="text-[10px] font-black text-accent/60 w-4 shrink-0">#{i + 1}</span>
                 <p className="text-xs font-semibold text-white flex-1 leading-snug">{opp}</p>
@@ -160,8 +160,8 @@ export function RadarWidget({ interests }: RadarProps) {
                 className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-white/[0.03] transition-colors group text-left"
               >
                 <div className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center transition-all group-hover:scale-105"
-                  style={{ background: `rgba(124,58,237,${0.06 + (t.score / 100) * 0.16})`, border: "1px solid rgba(124,58,237,0.15)" }}>
-                  <span className="text-xs font-black text-white">{t.score}</span>
+                  style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.15)" }}>
+                  <span className="text-xs font-black text-green-400">{t.score}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white group-hover:text-accent transition-colors truncate">{t.topic}</p>

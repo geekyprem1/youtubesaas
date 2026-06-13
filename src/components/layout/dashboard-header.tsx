@@ -70,7 +70,7 @@ export function DashboardHeader() {
             onClick={() => setOpen(!open)}
             className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
           >
-            <div className="w-8 h-8 rounded-full bg-gradient-purple flex items-center justify-center text-white text-sm font-bold">
+            <div className="w-8 h-8 rounded-full bg-secondary border border-white/[0.10] flex items-center justify-center text-white text-sm font-bold">
               {initials}
             </div>
             <ChevronDown className={`w-3 h-3 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />

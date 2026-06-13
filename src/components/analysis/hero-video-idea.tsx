@@ -190,13 +190,12 @@ export function HeroVideoIdea({ idea, channelDNA, channel, plan, competitors }: 
         <div
           className="relative rounded-2xl overflow-hidden"
           style={{
-            background: "linear-gradient(150deg, rgba(124,58,237,0.16) 0%, rgba(11,15,25,0.98) 50%)",
-            border: "1px solid rgba(124,58,237,0.3)",
-            boxShadow: "0 0 80px rgba(124,58,237,0.1), inset 0 1px 0 rgba(255,255,255,0.04)",
+            background: "rgba(17,24,39,0.95)",
+            border: "1px solid rgba(255,255,255,0.07)",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
           }}
         >
-          <div className="absolute -top-24 -left-16 w-96 h-96 bg-primary/8 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-16 -right-16 w-72 h-72 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
 
           <div className="relative z-10 p-7 md:p-9">
             <div className="flex flex-col xl:flex-row gap-9">
@@ -314,7 +313,7 @@ export function HeroVideoIdea({ idea, channelDNA, channel, plan, competitors }: 
                 {idea.topics?.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {idea.topics.map((t: string) => (
-                      <span key={t} className="px-3 py-1 rounded-full bg-primary/10 text-accent/70 text-xs font-medium border border-primary/15">
+                      <span key={t} className="px-3 py-1 rounded-full bg-white/[0.05] text-white/50 text-xs font-medium border border-white/[0.08]">
                         {t}
                       </span>
                     ))}
@@ -371,8 +370,8 @@ export function HeroVideoIdea({ idea, channelDNA, channel, plan, competitors }: 
                     </Button>
                   ) : (
                     <div
-                      className="rounded-xl border border-primary/30 overflow-hidden"
-                      style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(11,15,25,0.9) 100%)" }}
+                      className="rounded-xl border border-white/[0.07] overflow-hidden"
+                      style={{ background: "rgba(17,24,39,0.9)" }}
                     >
                       <div className="px-4 pt-4 pb-1">
                         <p className="text-sm font-bold text-white mb-0.5">

@@ -94,8 +94,8 @@ function SidebarRadar({ interests }: { interests: string[] }) {
             className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] hover:border-primary/20 transition-all text-left group"
           >
             <div
-              className="w-7 h-7 rounded-lg shrink-0 flex items-center justify-center text-[11px] font-black text-white"
-              style={{ background: `rgba(124,58,237,${0.08 + (t.score / 100) * 0.18})` }}
+              className="w-7 h-7 rounded-lg shrink-0 flex items-center justify-center text-[11px] font-black text-green-400"
+              style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.15)" }}
             >
               {t.score}
             </div>
