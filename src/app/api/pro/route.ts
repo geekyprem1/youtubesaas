@@ -22,10 +22,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { videoIdea, channelDNA, channel } = await req.json() as {
+    const { videoIdea, channelDNA, channel: rawChannel } = await req.json() as {
       videoIdea: VideoIdea;
       channelDNA: ChannelDNA;
-      channel: YoutubeChannel;
+      channel: YoutubeChannel | null;
+    };
+
+    // Ensure channel is never null — gemini prompt requires channel.name
+    const channel: YoutubeChannel = rawChannel ?? {
+      id: "", name: "Your Channel", handle: "", subscribers: 0,
+      totalVideos: 0, totalViews: 0, description: "", thumbnailUrl: "",
+      country: "", publishedAt: "",
     };
 
     const proContent = await generateProContent(videoIdea, channelDNA, channel);
