@@ -6,11 +6,9 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const today = new Date().toISOString().split("T")[0];
-
   const [profileRes, usageRes, analysesRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single(),
-    supabase.from("daily_usage").select("count").eq("user_id", user.id).eq("date", today).single(),
+    supabase.from("daily_usage").select("count").eq("user_id", user.id),
     supabase.from("analyses")
       .select("id, status, created_at, channel_id, channel_url")
       .eq("user_id", user.id)
@@ -19,7 +17,7 @@ export async function GET() {
   ]);
 
   const plan = profileRes.data?.plan ?? "free";
-  const dailyUsed = usageRes.data?.count ?? 0;
+  const dailyUsed = (usageRes.data ?? []).reduce((sum, row) => sum + (row.count ?? 0), 0);
   const dailyLimit = plan === "pro" ? 999 : 3;
 
   // Fetch channel data separately for analyses that have a channel_id

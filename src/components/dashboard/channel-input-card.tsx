@@ -38,7 +38,7 @@ export function ChannelInputCard({ plan, dailyUsed, dailyLimit }: Props) {
     }
     if (limitReached) {
       toast({
-        title: "Daily limit reached",
+        title: "Free analyses used up",
         description: "Upgrade to Pro for unlimited analyses.",
         variant: "destructive",
       });
@@ -114,8 +114,8 @@ export function ChannelInputCard({ plan, dailyUsed, dailyLimit }: Props) {
         {plan === "free" && (
           <p className="text-xs text-muted-foreground">
             {limitReached
-              ? "Daily limit reached — upgrade to Pro"
-              : `${remaining} of ${dailyLimit} free analyses left today`}
+              ? "Free analyses used — upgrade to Pro"
+              : `${remaining} of ${dailyLimit} free analyses remaining`}
           </p>
         )}
       </div>

@@ -62,7 +62,7 @@ export function UsageCard({ plan, used, limit, loading }: Props) {
   return (
     <div className="glass rounded-2xl p-5 h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
-        <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Daily Usage</span>
+        <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Free Credits</span>
         <span className="text-xs px-2.5 py-1 rounded-full bg-white/[0.06] text-muted-foreground font-medium border border-white/[0.06]">FREE</span>
       </div>
 
@@ -84,9 +84,14 @@ export function UsageCard({ plan, used, limit, loading }: Props) {
             transition={{ duration: 0.8, ease: "easeOut" }}
           />
         </div>
-        {nearLimit && (
+        {nearLimit && remaining > 0 && (
           <p className="text-[10px] text-orange-400/80 mt-1.5">
-            Almost at today's limit — upgrade for unlimited
+            Only {remaining} free analysis left — upgrade for unlimited
+          </p>
+        )}
+        {remaining === 0 && (
+          <p className="text-[10px] text-red-400/80 mt-1.5">
+            Free analyses used up — upgrade to Pro
           </p>
         )}
       </div>
