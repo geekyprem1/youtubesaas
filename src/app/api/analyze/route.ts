@@ -25,23 +25,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const today = new Date().toISOString().split("T")[0];
     const admin = createAdminClient();
 
-    const [{ data: usageRows }, { data: profile }] = await Promise.all([
-      admin.from("daily_usage").select("count").eq("user_id", user.id),
-      admin.from("profiles").select("plan").eq("id", user.id).single(),
-    ]);
+    const { data: usageData } = await admin
+      .from("daily_usage")
+      .select("count")
+      .eq("user_id", user.id)
+      .eq("date", today)
+      .single();
 
-    const totalLimit = profile?.plan === "pro" ? Infinity : 3;
-    const currentUsage = (usageRows ?? []).reduce((sum, row) => sum + (row.count ?? 0), 0);
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("plan")
+      .eq("id", user.id)
+      .single();
 
-    if (currentUsage >= totalLimit) {
+    const dailyLimit = profile?.plan === "pro" ? Infinity : 3;
+    const currentUsage = usageData?.count ?? 0;
+
+    if (currentUsage >= dailyLimit) {
       return NextResponse.json(
-        { error: "You've used all 3 free analyses. Upgrade to Pro for unlimited analyses." },
+        { error: "Daily analysis limit reached. Upgrade to Pro for unlimited analyses." },
         { status: 429 }
       );
     }
-    const today = new Date().toISOString().split("T")[0];
 
     const { channelUrl } = await req.json();
     if (!channelUrl) {

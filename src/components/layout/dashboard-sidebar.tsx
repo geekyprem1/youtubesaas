@@ -37,7 +37,7 @@ function UsagePill() {
   return (
     <div className="mx-4 mb-3 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.07]">
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Free Credits</span>
+        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Daily Credits</span>
         <span className={`text-[10px] font-black ${remaining === 0 ? "text-red-400" : "text-white"}`}>
           {remaining} / {limit} left
         </span>
@@ -49,9 +49,6 @@ function UsagePill() {
         <Link href="/pricing" className="block mt-2 text-[10px] font-bold text-accent hover:underline">
           Upgrade to Pro for unlimited →
         </Link>
-      )}
-      {remaining > 0 && (
-        <p className="mt-1.5 text-[9px] text-muted-foreground">Lifetime free tier · resets never</p>
       )}
     </div>
   );

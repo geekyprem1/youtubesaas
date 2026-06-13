@@ -13,17 +13,17 @@ export async function POST(req: NextRequest) {
     const admin = createAdminClient();
     const today = new Date().toISOString().split("T")[0];
 
-    const [{ data: usageRows }, { data: profile }] = await Promise.all([
-      admin.from("daily_usage").select("count").eq("user_id", user.id),
+    const [{ data: usageData }, { data: profile }] = await Promise.all([
+      admin.from("daily_usage").select("count").eq("user_id", user.id).eq("date", today).single(),
       admin.from("profiles").select("plan").eq("id", user.id).single(),
     ]);
 
-    const totalLimit = profile?.plan === "pro" ? Infinity : 3;
-    const currentUsage = (usageRows ?? []).reduce((sum, row) => sum + (row.count ?? 0), 0);
+    const dailyLimit = profile?.plan === "pro" ? Infinity : 3;
+    const currentUsage = usageData?.count ?? 0;
 
-    if (currentUsage >= totalLimit) {
+    if (currentUsage >= dailyLimit) {
       return NextResponse.json(
-        { error: "You've used all 3 free analyses. Upgrade to Pro for unlimited analyses." },
+        { error: "Daily limit reached. Upgrade to Pro for unlimited analyses." },
         { status: 429 }
       );
     }
