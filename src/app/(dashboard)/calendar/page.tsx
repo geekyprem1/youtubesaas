@@ -142,8 +142,8 @@ export default function CalendarPage() {
                     exit={{ opacity: 0, scale: 0.9 }}
                     draggable
                     onDragStart={() => setDragging(idea.id)}
-                    className="mb-1.5 p-2 rounded-lg border border-primary/20 cursor-grab active:cursor-grabbing group"
-                    style={{ background: "rgba(124,58,237,0.1)" }}
+                    className="mb-1.5 p-2 rounded-lg border border-white/[0.08] cursor-grab active:cursor-grabbing group"
+                    style={{ background: "rgba(255,255,255,0.04)" }}
                   >
                     <p className="text-[10px] text-white leading-snug font-medium line-clamp-2 mb-1">{idea.title}</p>
                     <div className="flex items-center justify-between">

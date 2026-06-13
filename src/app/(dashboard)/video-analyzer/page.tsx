@@ -56,12 +56,12 @@ function OpportunityCard({ opp, index }: { opp: VideoAnalysis["similarOpportunit
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08 }}
-      className="rounded-xl border border-primary/20 p-5"
-      style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(11,15,25,0.9) 100%)" }}
+      className="rounded-xl border border-white/[0.07] p-5"
+      style={{ background: "rgba(17,24,39,0.9)" }}
     >
       <div className="flex items-start gap-3 mb-3">
-        <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-          <span className="text-xs font-black text-accent">#{index + 1}</span>
+        <div className="w-7 h-7 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0">
+          <span className="text-xs font-black text-white/60">#{index + 1}</span>
         </div>
         <h4 className="text-sm font-bold text-white leading-snug">{opp.title}</h4>
       </div>
@@ -125,7 +125,7 @@ function ProGate() {
         </div>
 
         {/* Locked CTA */}
-        <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6">
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6">
           <div className="flex items-center justify-center gap-2 mb-2">
             <CrownIcon className="w-4 h-4 text-accent" />
             <span className="text-sm font-bold text-accent">Pro Feature</span>

@@ -26,7 +26,7 @@ export function Hero() {
       </div>
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-purple border border-primary/20 text-sm text-accent mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-white/[0.10] text-sm text-white/70 mb-8">
             <Sparkles className="w-3.5 h-3.5" />
             <span>10,000+ creators already growing with UploadIQ</span>
           </div>
