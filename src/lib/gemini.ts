@@ -16,6 +16,65 @@ function getApiKey() {
   return key;
 }
 
+/**
+ * Salvage every complete top-level object from a (possibly malformed) JSON
+ * array string. One broken element is skipped instead of failing the whole
+ * response — LLMs occasionally emit an unescaped quote deep in a long array.
+ */
+function salvageArrayObjects(arrStr: string): unknown[] {
+  const out: unknown[] = [];
+  let depth = 0, inStr = false, esc = false, start = -1;
+  for (let i = 0; i < arrStr.length; i++) {
+    const c = arrStr[i];
+    if (esc) { esc = false; continue; }
+    if (c === "\\") { esc = true; continue; }
+    if (c === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (c === "{") { if (depth === 0) start = i; depth++; }
+    else if (c === "}") {
+      depth--;
+      if (depth === 0 && start !== -1) {
+        const chunk = arrStr.slice(start, i + 1).replace(/,\s*([}\]])/g, "$1");
+        try { out.push(JSON.parse(chunk)); } catch { /* skip broken element */ }
+        start = -1;
+      }
+    }
+  }
+  return out;
+}
+
+/** Tolerant JSON parse: strips fences, trims to brackets, repairs trailing commas, salvages arrays. */
+function parseLooseJSON<T>(raw: string): T {
+  let s = raw
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+
+  // Trim to the outermost JSON bracket pair
+  const firstObj = s.indexOf("{");
+  const firstArr = s.indexOf("[");
+  const isArray = firstArr !== -1 && (firstArr < firstObj || firstObj === -1);
+  const open = isArray ? "[" : "{";
+  const close = isArray ? "]" : "}";
+  const start = s.indexOf(open);
+  const end = s.lastIndexOf(close);
+  if (start !== -1 && end > start) s = s.slice(start, end + 1);
+
+  // Repair common LLM mistakes: trailing commas before } or ]
+  const repaired = s.replace(/,\s*([}\]])/g, "$1");
+
+  try {
+    return JSON.parse(repaired) as T;
+  } catch (e) {
+    if (isArray) {
+      const salvaged = salvageArrayObjects(repaired);
+      if (salvaged.length > 0) return salvaged as unknown as T;
+    }
+    throw e;
+  }
+}
+
 async function generateJSON<T>(prompt: string): Promise<T> {
   const res = await fetch(`${OPENROUTER_BASE}/chat/completions`, {
     method: "POST",
@@ -30,10 +89,11 @@ async function generateJSON<T>(prompt: string): Promise<T> {
       messages: [
         {
           role: "user",
-          content: prompt + "\n\nIMPORTANT: Return ONLY valid JSON with no markdown, no code blocks, no extra text.",
+          content: prompt + "\n\nIMPORTANT: Return ONLY valid JSON with no markdown, no code blocks, no extra text. Escape any double quotes inside string values.",
         },
       ],
       temperature: 0.7,
+      max_tokens: 8000,
     }),
   });
 
@@ -44,13 +104,7 @@ async function generateJSON<T>(prompt: string): Promise<T> {
 
   const data = await res.json();
   const text = data.choices?.[0]?.message?.content?.trim() ?? "";
-  const cleaned = text
-    .replace(/^```json\s*/i, "")
-    .replace(/^```\s*/i, "")
-    .replace(/\s*```$/i, "")
-    .trim();
-
-  return JSON.parse(cleaned) as T;
+  return parseLooseJSON<T>(text);
 }
 
 export async function analyzeChannelDNA(
