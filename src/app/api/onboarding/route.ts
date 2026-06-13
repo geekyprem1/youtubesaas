@@ -16,7 +16,10 @@ export async function POST(req: NextRequest) {
   const updates: Record<string, unknown> = { onboarded: true, interests };
   if (channelUrl?.trim()) updates.onboarding_channel_url = channelUrl.trim();
 
-  const { error } = await admin.from("profiles").update(updates).eq("id", user.id);
+  const { error } = await admin.from("profiles").upsert(
+    { id: user.id, ...updates },
+    { onConflict: "id" }
+  );
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true });

@@ -56,7 +56,7 @@ export async function middleware(request: NextRequest) {
         .select("onboarded")
         .eq("id", user.id)
         .single();
-      if (profile && !profile.onboarded) {
+      if (!profile || !profile.onboarded) {
         const url = request.nextUrl.clone();
         url.pathname = "/onboarding";
         return NextResponse.redirect(url);
