@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Loader2, Film, AlertCircle, CheckCircle2, XCircle,
   TrendingUp, Eye, ThumbsUp, MessageSquare, Clock,
-  Lightbulb, Target, Zap, ArrowRight, Play
+  Lightbulb, Target, Zap, ArrowRight, Play, CrownIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { VideoAnalysis } from "@/lib/gemini";
 import { formatNumber } from "@/lib/utils";
+import Link from "next/link";
 
 /* ── Score ring ── */
 function ScoreRing({ score, label, color }: { score: number; label: string; color: string }) {
@@ -94,11 +95,67 @@ interface VideoData {
   duration: string;
 }
 
+function ProGate() {
+  return (
+    <div className="max-w-2xl mx-auto py-16 px-4 text-center">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-blue-500 flex items-center justify-center mx-auto glow-purple">
+          <Film className="w-8 h-8 text-white" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-black text-white mb-3">Video Analyzer</h1>
+          <p className="text-muted-foreground text-base leading-relaxed max-w-md mx-auto">
+            Paste any YouTube video — UploadIQ deconstructs why it worked and generates 5 unique opportunities for your channel.
+          </p>
+        </div>
+
+        {/* Feature previews */}
+        <div className="grid grid-cols-2 gap-3 text-left max-w-sm mx-auto">
+          {[
+            { icon: TrendingUp, text: "Virality & hook scores", color: "text-orange-400" },
+            { icon: Target, text: "Emotional trigger analysis", color: "text-red-400" },
+            { icon: Lightbulb, text: "5 similar opportunities", color: "text-yellow-400" },
+            { icon: Clock, text: "Full video framework", color: "text-blue-400" },
+          ].map(({ icon: Icon, text, color }) => (
+            <div key={text} className="flex items-center gap-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] px-3 py-2.5">
+              <Icon className={`w-4 h-4 shrink-0 ${color}`} />
+              <span className="text-xs text-white/70 font-medium">{text}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Locked CTA */}
+        <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <CrownIcon className="w-4 h-4 text-accent" />
+            <span className="text-sm font-bold text-accent">Pro Feature</span>
+          </div>
+          <p className="text-sm text-muted-foreground mb-5">
+            Video Analyzer is available on Creator Pro. Upgrade to unlock unlimited video breakdowns.
+          </p>
+          <Button variant="gradient" size="lg" className="gap-2 glow-purple font-bold" asChild>
+            <Link href="/pricing">
+              <CrownIcon className="w-4 h-4" />
+              Upgrade to Pro — $19/month
+            </Link>
+          </Button>
+          <p className="text-xs text-muted-foreground mt-3">No contracts · Cancel anytime</p>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function VideoAnalyzerPage() {
+  const [plan, setPlan] = useState<"free" | "pro" | null>(null);
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ video: VideoData; analysis: VideoAnalysis } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/user").then(r => r.json()).then(d => setPlan(d.user?.plan ?? "free"));
+  }, []);
 
   async function handleAnalyze() {
     if (!url.trim()) return;
@@ -133,6 +190,9 @@ export default function VideoAnalyzerPage() {
     { key: "audienceMatch", label: "Audience Match", color: "#22c55e" },
     { key: "retentionPotential", label: "Retention", color: "#eab308" },
   ] as const;
+
+  if (plan === null) return null; // loading
+  if (plan === "free") return <ProGate />;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-20">
