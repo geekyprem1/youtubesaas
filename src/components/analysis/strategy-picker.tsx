@@ -18,14 +18,29 @@ interface Props {
 export function StrategyPicker({ ideas }: Props) {
   if (ideas.length < 3) return null;
 
-  // Derive strategies from idea pool by score + difficulty
-  const easy = ideas.filter(i => i.difficulty === "Easy").sort((a, b) => b.opportunityScore - a.opportunityScore)[0];
-  const medium = ideas.filter(i => i.difficulty === "Medium").sort((a, b) => b.opportunityScore - a.opportunityScore)[0];
-  const hard = ideas.filter(i => i.difficulty === "Hard" || i.opportunityScore > 85).sort((a, b) => b.opportunityScore - a.opportunityScore)[0];
+  // Sort by score, pick 3 distinct ideas — no duplicates
+  const sorted = [...ideas].sort((a, b) => a.opportunityScore - b.opportunityScore);
+  const byDiff = (diff: string) => ideas.filter(i => i.difficulty === diff).sort((a, b) => b.opportunityScore - a.opportunityScore)[0];
 
-  const safeChoice = easy ?? ideas[2];
-  const growthBet = medium ?? ideas[1];
-  const viralBet = hard ?? ideas[0];
+  const easy = byDiff("Easy");
+  const medium = byDiff("Medium");
+  const hard = byDiff("Hard");
+
+  // Assign without overlap — each must be a different idea
+  const used = new Set<string>();
+  function pick(...candidates: (VideoIdea | undefined)[]): VideoIdea {
+    for (const c of candidates) {
+      if (c && !used.has(c.id)) { used.add(c.id); return c; }
+    }
+    // fallback: any unused idea from sorted list
+    const fallback = sorted.find(i => !used.has(i.id)) ?? sorted[0];
+    used.add(fallback.id);
+    return fallback;
+  }
+
+  const safeChoice = pick(easy, sorted[sorted.length - 1]);
+  const growthBet = pick(medium, sorted[Math.floor(sorted.length / 2)]);
+  const viralBet = pick(hard, [...sorted].reverse().find(i => !used.has(i.id)));
 
   const strategies = [
     {
