@@ -98,6 +98,7 @@ function PriorityCard({
   return (
     <>
       <motion.div
+        id={`idea-card-${idea.id}`}
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: rank * 0.1 }}
@@ -199,7 +200,7 @@ function CollapseRow({
 
   return (
     <>
-      <div className="border border-border/40 rounded-xl overflow-hidden hover:border-border/70 transition-colors">
+      <div id={`idea-card-${idea.id}`} className="border border-border/40 rounded-xl overflow-hidden hover:border-border/70 transition-colors">
         <button
           className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
           onClick={() => setExpanded(!expanded)}

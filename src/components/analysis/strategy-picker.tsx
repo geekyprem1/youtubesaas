@@ -20,6 +20,16 @@ interface Props {
 export function StrategyPicker({ ideas, plan = "free" }: Props) {
   if (ideas.length < 3) return null;
 
+  function scrollToIdea(ideaId: string) {
+    const el = document.getElementById(`idea-card-${ideaId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.style.transition = "box-shadow 0.3s ease";
+      el.style.boxShadow = "0 0 0 2px rgba(124,58,237,0.6), 0 0 24px rgba(124,58,237,0.25)";
+      setTimeout(() => { el.style.boxShadow = ""; }, 1800);
+    }
+  }
+
   // Sort by score, pick 3 distinct ideas — no duplicates
   const sorted = [...ideas].sort((a, b) => a.opportunityScore - b.opportunityScore);
   const byDiff = (diff: string) => ideas.filter(i => i.difficulty === diff).sort((a, b) => b.opportunityScore - a.opportunityScore)[0];
@@ -100,7 +110,8 @@ export function StrategyPicker({ ideas, plan = "free" }: Props) {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className={`relative rounded-xl border p-4 overflow-hidden transition-all ${s.color} ${!isLocked ? "cursor-pointer hover:scale-[1.02]" : ""}`}
+              onClick={() => !isLocked && scrollToIdea(s.idea.id)}
+            className={`relative rounded-xl border p-4 overflow-hidden transition-all ${s.color} ${!isLocked ? "cursor-pointer hover:scale-[1.02]" : ""}`}
             >
               <div className="flex items-center justify-between mb-3">
                 <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border ${s.badge}`}>
