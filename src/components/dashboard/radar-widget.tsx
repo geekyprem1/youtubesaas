@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, TrendingUp, X, Lightbulb, BarChart3, ChevronRight } from "lucide-react";
+import { Flame, TrendingUp, X, Lightbulb, BarChart3, ChevronRight, Lock, CrownIcon } from "lucide-react";
+import Link from "next/link";
 import { getTopicsForInterests, ALL_TOPICS } from "@/lib/categories";
 import type { RadarTopic } from "@/lib/categories";
 
@@ -121,33 +122,43 @@ export function DrilldownModal({ topic, onClose }: { topic: Topic; onClose: () =
 
 interface RadarProps {
   interests?: string[];
+  plan?: "free" | "pro";
 }
 
-export function RadarWidget({ interests }: RadarProps) {
+export function RadarWidget({ interests, plan }: RadarProps) {
   const [selected, setSelected] = useState<Topic | null>(null);
   const topics = interests && interests.length > 0
     ? getTopicsForInterests(interests)
     : ALL_TOPICS.slice(0, 5);
 
+  const isPro = plan === "pro";
+
   return (
     <>
-      <div className="glass rounded-2xl overflow-hidden">
+      <div className="glass rounded-2xl overflow-hidden relative">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.05]">
           <div className="flex items-center gap-2">
             <Flame className="w-4 h-4 text-orange-400" />
             <span className="text-sm font-bold text-white">Opportunity Radar</span>
-            <motion.span
-              animate={{ opacity: [0.4, 1, 0.4] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="text-[9px] font-bold text-green-400 border border-green-400/20 bg-green-400/8 px-1.5 py-0.5 rounded-full"
-            >
-              LIVE
-            </motion.span>
+            {isPro ? (
+              <motion.span
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="text-[9px] font-bold text-green-400 border border-green-400/20 bg-green-400/8 px-1.5 py-0.5 rounded-full"
+              >
+                LIVE
+              </motion.span>
+            ) : (
+              <span className="text-[9px] font-bold text-accent border border-accent/20 bg-accent/8 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                <CrownIcon className="w-2.5 h-2.5" /> PRO
+              </span>
+            )}
           </div>
-          <span className="text-xs text-muted-foreground">Click any topic to explore</span>
+          {isPro && <span className="text-xs text-muted-foreground">Click any topic to explore</span>}
         </div>
 
-        <div className="divide-y divide-white/[0.04]">
+        {/* Topics list — blurred for free users */}
+        <div className={`divide-y divide-white/[0.04] ${!isPro ? "pointer-events-none select-none" : ""}`}>
           {topics.map((t, i) => {
             const cfg = compConfig[t.comp];
             return (
@@ -156,29 +167,54 @@ export function RadarWidget({ interests }: RadarProps) {
                 initial={{ opacity: 0, x: -6 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.06 }}
-                onClick={() => setSelected(t)}
-                className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-white/[0.03] transition-colors group text-left"
+                onClick={() => isPro && setSelected(t)}
+                className={`w-full flex items-center gap-3 px-5 py-3.5 transition-colors group text-left ${isPro ? "hover:bg-white/[0.03]" : ""}`}
               >
-                <div className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center transition-all group-hover:scale-105"
+                <div className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center"
                   style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.15)" }}>
-                  <span className="text-xs font-black text-green-400">{t.score}</span>
+                  <span className={`text-xs font-black ${isPro ? "text-green-400" : "blur-sm text-green-400"}`}>{t.score}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white group-hover:text-accent transition-colors truncate">{t.topic}</p>
+                  <p className={`text-sm font-semibold truncate ${isPro ? "text-white group-hover:text-accent transition-colors" : "blur-sm text-white"}`}>{t.topic}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <TrendingUp className="w-2.5 h-2.5 text-blue-400 shrink-0" />
-                    <span className="text-[10px] text-blue-400 font-bold">{t.growth}</span>
-                    <span className="text-[10px] text-muted-foreground">· {t.momentum}</span>
+                    <span className={`text-[10px] text-blue-400 font-bold ${!isPro ? "blur-sm" : ""}`}>{t.growth}</span>
+                    <span className={`text-[10px] text-muted-foreground ${!isPro ? "blur-sm" : ""}`}>· {t.momentum}</span>
                   </div>
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${cfg.color} ${cfg.bg} ${cfg.border}`}>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${cfg.color} ${cfg.bg} ${cfg.border} ${!isPro ? "blur-sm" : ""}`}>
                   {t.comp}
                 </span>
-                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-accent transition-colors shrink-0" />
+                {isPro
+                  ? <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-accent transition-colors shrink-0" />
+                  : <Lock className="w-3.5 h-3.5 text-muted-foreground/30 shrink-0" />
+                }
               </motion.button>
             );
           })}
         </div>
+
+        {/* Pro gate overlay */}
+        {!isPro && (
+          <div className="px-5 py-5 border-t border-white/[0.05]" style={{ background: "rgba(13,17,23,0.6)" }}>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0">
+                <CrownIcon className="w-4 h-4 text-accent" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-white leading-tight">Unlock Opportunity Radar</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">See trending topics daily — your biggest retention driver.</p>
+              </div>
+            </div>
+            <Link
+              href="/pricing"
+              className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-purple text-white text-xs font-bold hover:opacity-90 transition-opacity glow-purple"
+            >
+              <CrownIcon className="w-3.5 h-3.5" />
+              Upgrade to Pro
+            </Link>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>

@@ -204,8 +204,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         {/* Divider */}
         <div className="mx-4 mb-3 border-t border-white/[0.05]" />
 
-        {/* Opportunity Radar */}
-        {sidebarData && (
+        {/* Opportunity Radar — Pro only */}
+        {sidebarData?.plan === "pro" && (
           <SidebarRadar interests={sidebarData.interests} />
         )}
 

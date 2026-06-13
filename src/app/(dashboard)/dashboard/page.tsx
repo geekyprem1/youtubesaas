@@ -71,7 +71,7 @@ export default function DashboardPage() {
           />
           </div>
           <AnalysisHistory analyses={userData?.analyses ?? []} loading={loading} />
-          <RadarWidget interests={userData?.user?.interests} />
+          <RadarWidget interests={userData?.user?.interests} plan={userData?.user?.plan ?? "free"} />
         </div>
 
         {/* Right column (1/3) */}
