@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Settings, Bell, Shield, Trash2, Crown, CheckCircle2, Loader2, Sparkles, Check, Save, Youtube } from "lucide-react";
+import { Settings, Shield, Trash2, Crown, CheckCircle2, Loader2, Sparkles, Check, Save, Youtube } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -21,7 +21,6 @@ interface UserData {
 export default function SettingsPage() {
   const [data, setData] = useState<UserData | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [notifications, setNotifications] = useState(true);
   const [interests, setInterests] = useState<string[]>([]);
   const [channelUrl, setChannelUrl] = useState("");
   const [saving, setSaving] = useState(false);
@@ -205,27 +204,6 @@ export default function SettingsPage() {
               <><Save className="w-4 h-4" /> Save Preferences</>
             )}
           </button>
-        </div>
-      </motion.div>
-
-      {/* Notifications */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-white/[0.05]">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2"><Bell className="w-4 h-4 text-muted-foreground" /> Notifications</h3>
-        </div>
-        <div className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold text-white">Analysis complete alerts</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Get notified when your analysis finishes</p>
-            </div>
-            <button
-              onClick={() => setNotifications(!notifications)}
-              className={`w-10 h-6 rounded-full transition-colors relative ${notifications ? "bg-accent" : "bg-white/[0.1]"}`}
-            >
-              <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${notifications ? "translate-x-4" : "translate-x-0.5"}`} />
-            </button>
-          </div>
         </div>
       </motion.div>
 
