@@ -11,11 +11,27 @@ import {
 } from "@/lib/youtube";
 import {
   analyzeChannelDNA,
-  generateVideoIdeas,
+  discoverOpportunities,
   findCompetitorKeywords,
 } from "@/lib/gemini";
 import { calculatePerformanceScore, extractChannelIdentifier } from "@/lib/utils";
-import type { Competitor, VideoPerformance } from "@/types";
+import {
+  toDNAProfile,
+  medianDurationSeconds,
+  bandFromSeconds,
+  tokenizeContent,
+  buildProof,
+  channelDnaMatch,
+  opportunityScore,
+  confidenceScore,
+  classifyOpportunity,
+  trendMomentum,
+  competitionLevel,
+  expectedViewRange,
+  termOverlap,
+  explain,
+} from "@/lib/scoring";
+import type { Competitor, VideoPerformance, VideoIdea } from "@/types";
 
 export async function POST(req: NextRequest) {
   try {
@@ -101,6 +117,12 @@ export async function POST(req: NextRequest) {
   }
 }
 
+function fmtViews(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${Math.round(n / 1_000)}K`;
+  return String(n);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function runAnalysisPipeline(analysisId: string, channelUrl: string, admin: any) {
   try {
@@ -150,10 +172,21 @@ async function runAnalysisPipeline(analysisId: string, channelUrl: string, admin
       );
     }
 
-    // STEP 2: Channel DNA
+    // STEP 2: Channel DNA (structured extraction; length band computed in code)
     await admin.from("analyses").update({ step: 2 }).eq("id", analysisId);
     const channelDNA = await analyzeChannelDNA(channel, videos);
-    await admin.from("analyses").update({ channel_dna: channelDNA }).eq("id", analysisId);
+    const lengthBand = bandFromSeconds(medianDurationSeconds(videos.map((v) => v.duration)));
+    channelDNA.lengthBand = lengthBand;
+    const dnaProfile = toDNAProfile(channelDNA, lengthBand);
+    await admin
+      .from("analyses")
+      .update({ channel_dna: channelDNA, dna_profile: dnaProfile })
+      .eq("id", analysisId);
+    // Cache DNA on the channel for reuse
+    await admin
+      .from("channels")
+      .update({ dna_profile: dnaProfile, dna_extracted_at: new Date().toISOString(), last_analyzed_at: new Date().toISOString() })
+      .eq("id", channelId);
 
     // STEP 3: Top performing videos
     await admin.from("analyses").update({ step: 3 }).eq("id", analysisId);
@@ -189,13 +222,18 @@ async function runAnalysisPipeline(analysisId: string, channelUrl: string, admin
     const competitors: Competitor[] = await Promise.all(
       competitorChannels.map(async (ch) => {
         const topVids = await fetchCompetitorTopVideos(ch.id, 10);
+        // Real similarity: overlap between this competitor's video topics and our channel's topics
+        const compTokens = [
+          ...new Set(topVids.flatMap((v) => tokenizeContent(v.title, v.tags ?? []))),
+        ];
+        const similarity = Math.round(termOverlap(dnaProfile.primaryTopics, compTokens));
         return {
           channelId: ch.id,
           channelName: ch.name,
           handle: ch.handle,
           subscribers: ch.subscribers,
           thumbnailUrl: ch.thumbnailUrl,
-          similarityScore: Math.floor(Math.random() * 30) + 70,
+          similarityScore: similarity,
           topVideos: topVids,
         };
       })
@@ -217,12 +255,102 @@ async function runAnalysisPipeline(analysisId: string, channelUrl: string, admin
       );
     }
 
-    // STEPS 5 & 6: Ideas
+    // STEP 5: Discover opportunities (structured features only — no AI scores)
+    await admin.from("analyses").update({ step: 5 }).eq("id", analysisId);
+    const drafts = await discoverOpportunities(channel, channelDNA, topVideos, competitors);
+
+    // Build the competitor video corpus (MVP: title+tag tokens as topic proxy)
+    const corpus = competitors.flatMap((c) =>
+      c.topVideos.map((v) => ({
+        channelId: c.channelId,
+        views: v.viewCount,
+        publishedAt: v.publishedAt,
+        topics: tokenizeContent(v.title, v.tags ?? []),
+      }))
+    );
+    const totalChannels = competitors.length;
+
+    // STEP 6: Deterministic scoring via scoring.ts
     await admin.from("analyses").update({ step: 6 }).eq("id", analysisId);
-    const videoIdeas = await generateVideoIdeas(channel, channelDNA, topVideos, competitors);
+
+    const scored = drafts.map((d, i) => {
+      const oppFeatures = {
+        topics: d.topics ?? [],
+        format: d.format ?? "",
+        audience: d.audience ?? [],
+        tone: d.tone ?? [],
+        lengthBand: d.lengthBand ?? lengthBand,
+      };
+      const proof = buildProof(oppFeatures.topics, corpus, totalChannels);
+      const dna = channelDnaMatch(oppFeatures, dnaProfile);
+      const opp = opportunityScore(dna.score, proof);
+      const conf = confidenceScore(dna.score, dna.breakdown.audience, proof);
+      const trend = Math.round(trendMomentum(proof));
+      const competition = Math.round(competitionLevel(proof));
+      const oppType = classifyOpportunity(proof);
+      const range = expectedViewRange(proof);
+      const why = explain(dna, opp, proof);
+      const estimatedPerformance =
+        range.high > 0
+          ? `${fmtViews(range.low)}-${fmtViews(range.high)} views based on competitor data`
+          : "Estimate forming — limited competitor data";
+
+      const idea: VideoIdea = {
+        id: String(i + 1),
+        title: d.title,
+        opportunityScore: opp.score,
+        reason: d.reason,
+        expectedAudienceInterest:
+          conf.score >= 80 ? "Very High" : conf.score >= 65 ? "High" : "Medium",
+        difficulty: d.difficulty,
+        estimatedPerformance,
+        topics: oppFeatures.topics,
+        format: oppFeatures.format,
+        dnaMatchScore: dna.score,
+        confidenceScore: conf.score,
+        trendScore: trend,
+        competitionScore: competition,
+        opportunityType: oppType,
+        whyBullets: why,
+        alternativeAngles: d.alternativeAngles ?? [],
+        confidenceBreakdown: conf.breakdown as VideoIdea["confidenceBreakdown"],
+      };
+
+      return { idea, proof, range, dna, opp, conf, trend, competition, oppType };
+    });
+
+    // Sort by opportunity score (best first)
+    scored.sort((a, b) => b.idea.opportunityScore - a.idea.opportunityScore);
+    const videoIdeas = scored.map((s) => s.idea);
+
+    // Persist the queryable recommendations table
+    await admin.from("recommendations").delete().eq("analysis_id", analysisId);
+    await admin.from("recommendations").insert(
+      scored.map((s) => ({
+        analysis_id: analysisId,
+        title: s.idea.title,
+        dna_match_score: s.dna.score,
+        opportunity_score: s.opp.score,
+        confidence_score: s.conf.score,
+        trend_score: s.trend,
+        competition_score: s.competition,
+        opportunity_type: s.oppType,
+        expected_views_low: s.range.low,
+        expected_views_high: s.range.high,
+        difficulty: s.idea.difficulty,
+        upload_window: s.oppType === "Emerging" || s.oppType === "Rising" ? "Next 14 days" : "Next 30 days",
+        why_bullets: s.idea.whyBullets,
+        competitor_proof: s.proof,
+        alternative_angles: s.idea.alternativeAngles,
+        score_breakdown: { dna: s.dna.breakdown, opportunity: s.opp.breakdown, confidence: s.conf.breakdown },
+        topics: s.idea.topics,
+        format: s.idea.format,
+      }))
+    );
 
     await admin.from("analyses").update({
       video_ideas: videoIdeas,
+      scoring_version: 1,
       status: "completed",
       completed_at: new Date().toISOString(),
     }).eq("id", analysisId);

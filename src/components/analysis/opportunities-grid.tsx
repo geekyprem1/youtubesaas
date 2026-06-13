@@ -8,7 +8,7 @@ import type { ProContentType } from "@/lib/gemini";
 import Link from "next/link";
 import {
   Flame, Clock, Bookmark, ChevronDown,
-  ChevronUp, ArrowRight, Lock, Zap, TrendingUp, Target, CrownIcon
+  ChevronUp, ArrowRight, Lock, Zap, TrendingUp, CheckCircle2, CrownIcon
 } from "lucide-react";
 
 interface VideoIdea {
@@ -21,6 +21,25 @@ interface VideoIdea {
   estimatedPerformance: string;
   topics: string[];
   format: string;
+  dnaMatchScore?: number;
+  confidenceScore?: number;
+  trendScore?: number;
+  competitionScore?: number;
+  opportunityType?: "Emerging" | "Rising" | "Validated" | "Saturated";
+  whyBullets?: string[];
+}
+
+function scoreColorHex(score: number): string {
+  return score >= 80 ? "#22c55e" : score >= 60 ? "#eab308" : "#f97316";
+}
+
+function ScoreStat({ label, score }: { label: string; score: number }) {
+  return (
+    <div className="bg-white/[0.03] rounded-xl p-2.5 text-center">
+      <p className="text-base font-black leading-none" style={{ color: scoreColorHex(score) }}>{score}</p>
+      <p className="text-[9px] text-muted-foreground mt-1 leading-tight">{label}</p>
+    </div>
+  );
 }
 
 interface Props {
@@ -132,32 +151,44 @@ function PriorityCard({
           {idea.title}
         </h3>
 
-        {/* Score bar */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs text-muted-foreground">Opportunity Score</span>
+        {/* Three deterministic scores */}
+        {idea.dnaMatchScore != null ? (
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <ScoreStat label="DNA Match" score={idea.dnaMatchScore} />
+            <ScoreStat label="Opportunity" score={idea.opportunityScore} />
+            <ScoreStat label="Confidence" score={idea.confidenceScore ?? idea.opportunityScore} />
           </div>
-          <ScoreBar score={idea.opportunityScore} />
+        ) : (
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs text-muted-foreground">Opportunity Score</span>
+            </div>
+            <ScoreBar score={idea.opportunityScore} />
+          </div>
+        )}
+
+        {/* Est. views */}
+        <div className="flex items-center gap-2 mb-4 text-xs">
+          <TrendingUp className="w-3.5 h-3.5 text-green-400 shrink-0" />
+          <span className="text-muted-foreground">Est. Views</span>
+          <span className="font-bold text-white ml-auto">{idea.estimatedPerformance}</span>
         </div>
 
-        {/* Metrics */}
-        <div className="grid grid-cols-2 gap-2 mb-5">
-          <div className="bg-white/[0.03] rounded-xl p-3">
-            <TrendingUp className="w-3.5 h-3.5 text-green-400 mb-1" />
-            <p className="text-xs text-muted-foreground">Est. Views</p>
-            <p className="text-xs font-bold text-white mt-0.5">{idea.estimatedPerformance}</p>
+        {/* Why this will work — from the math */}
+        {idea.whyBullets && idea.whyBullets.length > 0 ? (
+          <div className="mb-5 space-y-1.5">
+            {idea.whyBullets.slice(0, 3).map((w, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
+                <span className="text-xs text-white/65 leading-snug">{w}</span>
+              </div>
+            ))}
           </div>
-          <div className="bg-white/[0.03] rounded-xl p-3">
-            <Target className="w-3.5 h-3.5 text-blue-400 mb-1" />
-            <p className="text-xs text-muted-foreground">Format</p>
-            <p className="text-xs font-bold text-white mt-0.5">{idea.format}</p>
-          </div>
-        </div>
-
-        {/* Reason */}
-        <p className="text-sm text-white/60 leading-relaxed mb-5 line-clamp-2">
-          {idea.reason}
-        </p>
+        ) : (
+          <p className="text-sm text-white/60 leading-relaxed mb-5 line-clamp-2">
+            {idea.reason}
+          </p>
+        )}
 
         {/* CTA */}
         <Button

@@ -22,6 +22,12 @@ interface Props {
     estimatedPerformance: string;
     topics: string[];
     format: string;
+    dnaMatchScore?: number;
+    confidenceScore?: number;
+    trendScore?: number;
+    competitionScore?: number;
+    opportunityType?: "Emerging" | "Rising" | "Validated" | "Saturated";
+    whyBullets?: string[];
   };
   channelDNA: Record<string, unknown>;
   channel: Record<string, string | number>;
@@ -161,19 +167,21 @@ export function HeroVideoIdea({ idea, channelDNA, channel, plan, competitors }: 
     ? `${(totalProofViews / 1000000).toFixed(1)}M`
     : `${Math.round(totalProofViews / 1000)}K`;
 
-  /* Confidence = derived from opportunity score */
-  const confidence = Math.min(99, Math.round(idea.opportunityScore * 1.05 - 2));
+  /* Confidence — real score from the engine, with a fallback for old analyses */
+  const confidence = idea.confidenceScore ?? Math.min(99, Math.round(idea.opportunityScore * 1.05 - 2));
 
-  /* Evidence items */
-  const evidence = [
-    proofItems.length > 0
-      ? `Similar videos generated ${totalFormatted}+ combined views across ${proofItems.length} competitors`
-      : "Multiple competitors actively winning with this exact topic right now",
-    `Directly matches your highest-performing ${(channelDNA?.contentStyle as string) ?? "content"} category`,
-    `${competitors.filter(c => c.top_videos?.length > 0).length} competitors are currently winning with this topic`,
-    "Audience search interest for this topic is increasing month-over-month",
-    "This specific angle has never been covered on your channel",
-  ];
+  /* Evidence — prefer the math-derived "why" bullets; fall back to generic copy */
+  const evidence = idea.whyBullets && idea.whyBullets.length > 0
+    ? idea.whyBullets
+    : [
+        proofItems.length > 0
+          ? `Similar videos generated ${totalFormatted}+ combined views across ${proofItems.length} competitors`
+          : "Multiple competitors actively winning with this exact topic right now",
+        `Directly matches your highest-performing ${(channelDNA?.contentStyle as string) ?? "content"} category`,
+        `${competitors.filter(c => c.top_videos?.length > 0).length} competitors are currently winning with this topic`,
+        "Audience search interest for this topic is increasing month-over-month",
+        "This specific angle has never been covered on your channel",
+      ];
 
   return (
     <>
@@ -241,11 +249,23 @@ export function HeroVideoIdea({ idea, channelDNA, channel, plan, competitors }: 
                   className="flex flex-wrap gap-2"
                 >
                   <StatChip icon={Eye} label="Estimated Views" value={idea.estimatedPerformance} accent />
+                  {idea.dnaMatchScore != null && (
+                    <StatChip icon={Sparkles} label="DNA Match" value={`${idea.dnaMatchScore}/100`} accent />
+                  )}
                   <StatChip icon={TrendingUp} label="Trend Velocity"
-                    value={idea.opportunityScore >= 80 ? "Rising Fast 🚀" : idea.opportunityScore >= 65 ? "Growing ↑" : "Stable →"} />
+                    value={
+                      idea.trendScore != null
+                        ? (idea.trendScore >= 70 ? "Rising Fast 🚀" : idea.trendScore >= 45 ? "Growing ↑" : "Stable →")
+                        : (idea.opportunityScore >= 80 ? "Rising Fast 🚀" : idea.opportunityScore >= 65 ? "Growing ↑" : "Stable →")
+                    } />
                   <StatChip icon={Target} label="Competition"
-                    value={idea.difficulty === "Easy" ? "Low ✓" : idea.difficulty === "Medium" ? "Medium" : "High"} />
-                  <StatChip icon={Calendar} label="Best Window" value="Next 7 Days" accent />
+                    value={
+                      idea.competitionScore != null
+                        ? (idea.competitionScore >= 70 ? "Low ✓" : idea.competitionScore >= 40 ? "Medium" : "High")
+                        : (idea.difficulty === "Easy" ? "Low ✓" : idea.difficulty === "Medium" ? "Medium" : "High")
+                    } />
+                  <StatChip icon={Calendar} label="Best Window"
+                    value={idea.opportunityType === "Emerging" || idea.opportunityType === "Rising" ? "Next 14 Days" : "Next 30 Days"} accent />
                 </motion.div>
 
                 {/* ── Why This Will Work ── */}

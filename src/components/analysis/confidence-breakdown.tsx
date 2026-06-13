@@ -8,37 +8,66 @@ interface Props {
   score: number;
   competitorCount: number;
   channelMatch: number; // 0-100
+  // Real sub-scores (0-100) from the DNA Match Engine; weighted for display
+  breakdown?: { dnaMatch: number; competitorSuccess: number; trend: number; audienceFit: number };
 }
 
-export function ConfidenceBreakdown({ score, competitorCount, channelMatch }: Props) {
+export function ConfidenceBreakdown({ score, competitorCount, channelMatch, breakdown }: Props) {
   const [open, setOpen] = useState(false);
 
-  const factors = [
-    {
-      label: "Channel Match",
-      pct: Math.round(channelMatch * 0.35),
-      color: "bg-violet-500",
-      desc: "How well this topic fits your existing content style and audience",
-    },
-    {
-      label: "Competitor Validation",
-      pct: Math.round(Math.min(competitorCount / 10, 1) * 100 * 0.3),
-      color: "bg-blue-500",
-      desc: `${competitorCount} competitor channels are winning with this topic`,
-    },
-    {
-      label: "Trend Momentum",
-      pct: Math.round(score * 0.2),
-      color: "bg-cyan-500",
-      desc: "Audience search interest and engagement velocity for this topic",
-    },
-    {
-      label: "Audience Fit",
-      pct: Math.round(channelMatch * 0.15),
-      color: "bg-green-500",
-      desc: "Alignment with your subscriber demographics and preferences",
-    },
-  ];
+  const factors = breakdown
+    ? [
+        {
+          label: "Channel Match",
+          pct: Math.round(breakdown.dnaMatch * 0.35),
+          color: "bg-violet-500",
+          desc: "Topic, format, audience, tone and length fit vs. your channel DNA",
+        },
+        {
+          label: "Competitor Validation",
+          pct: Math.round(breakdown.competitorSuccess * 0.3),
+          color: "bg-blue-500",
+          desc: "Combined views competitors earned on this exact topic",
+        },
+        {
+          label: "Trend Momentum",
+          pct: Math.round(breakdown.trend * 0.2),
+          color: "bg-cyan-500",
+          desc: "Views-per-day velocity and recency of competitor videos",
+        },
+        {
+          label: "Audience Fit",
+          pct: Math.round(breakdown.audienceFit * 0.15),
+          color: "bg-green-500",
+          desc: "Overlap between this topic's audience and yours",
+        },
+      ]
+    : [
+        {
+          label: "Channel Match",
+          pct: Math.round(channelMatch * 0.35),
+          color: "bg-violet-500",
+          desc: "How well this topic fits your existing content style and audience",
+        },
+        {
+          label: "Competitor Validation",
+          pct: Math.round(Math.min(competitorCount / 10, 1) * 100 * 0.3),
+          color: "bg-blue-500",
+          desc: `${competitorCount} competitor channels are winning with this topic`,
+        },
+        {
+          label: "Trend Momentum",
+          pct: Math.round(score * 0.2),
+          color: "bg-cyan-500",
+          desc: "Audience search interest and engagement velocity for this topic",
+        },
+        {
+          label: "Audience Fit",
+          pct: Math.round(channelMatch * 0.15),
+          color: "bg-green-500",
+          desc: "Alignment with your subscriber demographics and preferences",
+        },
+      ];
 
   return (
     <div className="rounded-xl border border-white/[0.07]" style={{ background: "rgba(255,255,255,0.02)" }}>

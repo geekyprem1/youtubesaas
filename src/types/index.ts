@@ -33,6 +33,12 @@ export interface ChannelDNA {
   topicClusters: string[];
   uniqueValueProp: string;
   toneAndVoice: string;
+  // Structured arrays for the DNA Match Engine (scoring.ts)
+  primaryTopics?: string[];
+  formats?: string[];
+  audience?: string[];
+  tone?: string[];
+  lengthBand?: "short" | "mid" | "long";
 }
 
 export interface VideoPerformance {
@@ -78,6 +84,15 @@ export interface VideoIdea {
   estimatedPerformance: string;
   topics: string[];
   format: string;
+  // Deterministic scores from the DNA Match Engine (optional = older analyses)
+  dnaMatchScore?: number;
+  confidenceScore?: number;
+  trendScore?: number;
+  competitionScore?: number;
+  opportunityType?: "Emerging" | "Rising" | "Validated" | "Saturated";
+  whyBullets?: string[];
+  alternativeAngles?: string[];
+  confidenceBreakdown?: { dnaMatch: number; competitorSuccess: number; trend: number; audienceFit: number };
 }
 
 export interface ProContent {

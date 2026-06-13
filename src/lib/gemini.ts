@@ -63,7 +63,8 @@ export async function analyzeChannelDNA(
     .join("\n");
 
   const prompt = `
-Analyze this YouTube channel and return a JSON object with its DNA.
+You are extracting the repeatable formula of a YouTube channel from its top videos.
+Return STRUCTURED features as normalized, lowercase arrays — not prose, not scores.
 
 Channel: ${channel.name}
 Subscribers: ${channel.subscribers.toLocaleString()}
@@ -76,74 +77,93 @@ Return this exact JSON structure:
 {
   "primaryNiche": "string (main content niche, e.g., 'AI Tools')",
   "secondaryNiche": "string (secondary niche, e.g., 'Productivity')",
-  "audienceType": "string (e.g., 'Beginners', 'Professionals', 'Students')",
-  "contentStyle": "string (e.g., 'Tutorial', 'Entertainment', 'Educational', 'Review')",
-  "contentFormat": "string (e.g., 'Long-form', 'Short-form', 'Mixed')",
-  "topicClusters": ["array", "of", "5-8", "main", "topic", "clusters"],
+  "audienceType": "string (single primary audience, e.g., 'Developers')",
+  "contentStyle": "string (single primary style, e.g., 'Tutorial')",
+  "contentFormat": "string ('Long-form', 'Short-form', or 'Mixed')",
+  "topicClusters": ["5-8 main topic clusters, human-readable"],
   "uniqueValueProp": "string (what makes this channel unique, 1-2 sentences)",
-  "toneAndVoice": "string (e.g., 'Casual and friendly', 'Professional and authoritative')"
+  "toneAndVoice": "string (e.g., 'Casual and friendly')",
+  "primaryTopics": ["6-8 normalized lowercase topic tags, e.g., 'ai agents', 'saas', 'automation'"],
+  "formats": ["normalized lowercase formats, e.g., 'tutorial', 'case study', 'review'"],
+  "audience": ["normalized lowercase audience segments, e.g., 'developers', 'indie hackers'"],
+  "tone": ["normalized lowercase tone descriptors, e.g., 'educational', 'practical'"]
 }
 `;
 
   return generateJSON<ChannelDNA>(prompt);
 }
 
-export async function generateVideoIdeas(
+export interface OpportunityDraft {
+  title: string;
+  topics: string[];
+  format: string;
+  audience: string[];
+  tone: string[];
+  lengthBand: "short" | "mid" | "long";
+  reason: string;
+  difficulty: "Easy" | "Medium" | "Hard";
+  alternativeAngles: string[];
+}
+
+/**
+ * STEP 3+4 (discovery): find topics competitors win on that this channel has
+ * NOT covered. Returns STRUCTURED FEATURES ONLY — no scores. All scoring is
+ * computed deterministically in scoring.ts.
+ */
+export async function discoverOpportunities(
   channel: YoutubeChannel,
   channelDNA: ChannelDNA,
   topVideos: Array<{ title: string; views: number; performanceScore: number }>,
   competitors: Competitor[]
-): Promise<VideoIdea[]> {
-  const topVideoList = topVideos
-    .slice(0, 10)
-    .map((v) => `- "${v.title}" (${v.views.toLocaleString()} views, score: ${v.performanceScore})`)
+): Promise<OpportunityDraft[]> {
+  const coveredTitles = topVideos
+    .slice(0, 12)
+    .map((v) => `- "${v.title}"`)
     .join("\n");
 
   const competitorTopics = competitors
     .flatMap((c) =>
-      c.topVideos.slice(0, 5).map((v) => `[${c.channelName}] "${v.title}" (${v.viewCount.toLocaleString()} views)`)
+      c.topVideos.slice(0, 6).map((v) => `[${c.channelName}] "${v.title}" (${v.viewCount.toLocaleString()} views)`)
     )
-    .slice(0, 50)
+    .slice(0, 60)
     .join("\n");
 
   const prompt = `
-You are a YouTube strategy expert. Generate 20 unique, high-potential video ideas for this channel.
+You are a YouTube growth strategist. Find 20 video OPPORTUNITIES for this channel.
 
 CHANNEL: ${channel.name}
-Primary Niche: ${channelDNA.primaryNiche}
-Secondary Niche: ${channelDNA.secondaryNiche}
+Primary niche: ${channelDNA.primaryNiche}
 Audience: ${channelDNA.audienceType}
-Style: ${channelDNA.contentStyle}
-Topic Clusters: ${channelDNA.topicClusters.join(", ")}
+Formats: ${(channelDNA.formats ?? [channelDNA.contentStyle]).join(", ")}
+Topic clusters: ${channelDNA.topicClusters.join(", ")}
 
-TOP PERFORMING VIDEOS:
-${topVideoList}
+THIS CHANNEL HAS ALREADY COVERED (do not repeat these):
+${coveredTitles}
 
-COMPETITOR TOP VIDEOS (topics to analyze for opportunities):
+COMPETITOR TOP VIDEOS (mine these for proven, uncovered topics):
 ${competitorTopics}
 
-Generate 20 video ideas. Find topics that:
-1. Competitors covered with high views but this channel hasn't covered yet
-2. Align with this channel's niche and audience
-3. Have high potential based on competitor performance
+Pick topics that competitors are winning with but this channel has NOT covered,
+and that fit this channel's niche and audience.
 
-Return a JSON array:
+Return STRUCTURED FEATURES ONLY. DO NOT assign any scores, ratings, or numbers —
+scoring is computed separately. Return a JSON array of exactly 20 items:
 [
   {
-    "id": "1",
     "title": "specific, clickable video title",
-    "opportunityScore": 0-100,
-    "reason": "2-3 sentences explaining why this is a great opportunity",
-    "expectedAudienceInterest": "High/Medium/Very High with brief explanation",
-    "difficulty": "Easy/Medium/Hard",
-    "estimatedPerformance": "e.g., '50K-200K views based on competitor data'",
-    "topics": ["tag1", "tag2", "tag3"],
-    "format": "Tutorial/Review/Analysis/etc"
+    "topics": ["2-4 normalized lowercase topic tags matching competitor topics"],
+    "format": "single normalized lowercase format (e.g., 'tutorial')",
+    "audience": ["1-2 normalized lowercase audience segments"],
+    "tone": ["1-2 normalized lowercase tone descriptors"],
+    "lengthBand": "short | mid | long",
+    "reason": "2-3 sentences on why this is an uncovered opportunity",
+    "difficulty": "Easy | Medium | Hard",
+    "alternativeAngles": ["2-3 alternative title angles for the same topic"]
   }
 ]
 `;
 
-  return generateJSON<VideoIdea[]>(prompt);
+  return generateJSON<OpportunityDraft[]>(prompt);
 }
 
 export type ProContentType = "titles" | "thumbnails" | "outline" | "seo" | "all";

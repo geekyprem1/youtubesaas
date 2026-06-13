@@ -152,16 +152,17 @@ export default function AnalysisPage() {
             <div className="flex flex-col md:flex-row gap-3">
               <div className="flex-1">
                 <ConfidenceBreakdown
-                  score={Math.min(99, Math.round(topIdea.opportunityScore * 1.05 - 2))}
+                  score={topIdea.confidenceScore ?? Math.min(99, Math.round(topIdea.opportunityScore * 1.05 - 2))}
                   competitorCount={competitors.length}
-                  channelMatch={topIdea.opportunityScore}
+                  channelMatch={topIdea.dnaMatchScore ?? topIdea.opportunityScore}
+                  breakdown={topIdea.confidenceBreakdown}
                 />
               </div>
               <div className="flex items-start pt-1">
                 <ShareCard
                   title={topIdea.title}
                   score={topIdea.opportunityScore}
-                  confidence={Math.min(99, Math.round(topIdea.opportunityScore * 1.05 - 2))}
+                  confidence={topIdea.confidenceScore ?? Math.min(99, Math.round(topIdea.opportunityScore * 1.05 - 2))}
                   estimatedViews={topIdea.estimatedPerformance}
                   channelName={(channel?.name as string) ?? "Your Channel"}
                 />
