@@ -14,7 +14,7 @@ export function HowItWorks() {
       <div className="max-w-6xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
           <p className="text-xs font-bold text-accent uppercase tracking-widest mb-3">The Process</p>
-          <h2 className="text-3xl md:text-5xl font-black text-white mb-4">From Channel URL to <span className="gradient-text">20 Winning Ideas</span></h2>
+          <h2 className="text-3xl md:text-5xl font-black text-white mb-4">How UploadIQ Finds Your <span className="gradient-text">Next YouTube Video Idea</span></h2>
           <p className="text-xl text-muted-foreground max-w-xl mx-auto">Six steps. Under 2 minutes. No guessing.</p>
         </motion.div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

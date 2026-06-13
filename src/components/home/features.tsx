@@ -15,7 +15,7 @@ export function Features() {
       <div className="max-w-6xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
           <p className="text-xs font-bold text-accent uppercase tracking-widest mb-3">How It Works For You</p>
-          <h2 className="text-3xl md:text-5xl font-black text-white mb-4">How UploadIQ Finds Your <span className="gradient-text">Next Winning Video</span></h2>
+          <h2 className="text-3xl md:text-5xl font-black text-white mb-4">YouTube Channel Analysis and <span className="gradient-text">Video Opportunity Discovery</span></h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Six layers of AI intelligence that turn raw channel data into your highest-confidence upload decision.</p>
         </motion.div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
