@@ -3,11 +3,56 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Youtube, History, CrownIcon, LogOut, Plus, Film, Calendar, Eye, Menu, X } from "lucide-react";
+import { LayoutDashboard, Youtube, History, CrownIcon, LogOut, Plus, Film, Calendar, Eye, Menu, X, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+
+function UsagePill() {
+  const [used, setUsed] = useState<number | null>(null);
+  const [limit, setLimit] = useState(3);
+  const [plan, setPlan] = useState<"free" | "pro">("free");
+
+  useEffect(() => {
+    fetch("/api/user").then(r => r.json()).then(d => {
+      setUsed(d.user?.dailyAnalysesUsed ?? 0);
+      setLimit(d.user?.dailyAnalysesLimit ?? 3);
+      setPlan(d.user?.plan ?? "free");
+    });
+  }, []);
+
+  if (used === null) return null;
+  if (plan === "pro") return (
+    <div className="mx-4 mb-3 px-3 py-2 rounded-lg bg-accent/10 border border-accent/20 flex items-center gap-2">
+      <Zap className="w-3.5 h-3.5 text-accent" />
+      <span className="text-xs font-bold text-accent">Pro · Unlimited</span>
+    </div>
+  );
+
+  const remaining = limit - used;
+  const pct = (used / limit) * 100;
+  const color = remaining === 0 ? "bg-red-500" : remaining === 1 ? "bg-yellow-400" : "bg-accent";
+
+  return (
+    <div className="mx-4 mb-3 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.07]">
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Daily Credits</span>
+        <span className={`text-[10px] font-black ${remaining === 0 ? "text-red-400" : "text-white"}`}>
+          {remaining} / {limit} left
+        </span>
+      </div>
+      <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
+      </div>
+      {remaining === 0 && (
+        <Link href="/pricing" className="block mt-2 text-[10px] font-bold text-accent hover:underline">
+          Upgrade for unlimited →
+        </Link>
+      )}
+    </div>
+  );
+}
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, badge: null },
@@ -48,6 +93,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           <Plus className="w-4 h-4" />New Analysis
         </Link>
       </div>
+      <UsagePill />
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
